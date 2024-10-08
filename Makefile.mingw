@@ -1,0 +1,26 @@
+# =============================================================================
+
+.PHONY: all clean rebuild
+
+# =============================================================================
+
+INCLUDE_PATH = include
+LIBRARY_PATH = lib
+SOURCE_PATH = src
+
+TARGET_SUFFIX = exe
+
+# =============================================================================
+
+CC = x86_64-w64-mingw32-gcc
+CFLAGS = -D_DEFAULT_SOURCE -g -I${INCLUDE_PATH} -O2 -std=gnu99
+LDFLAGS = -L${LIBRARY_PATH}
+LDLIBS = -lglfw3 -lgdi32 -lopengl32 -lwinmm -lpthread
+
+# =============================================================================
+
+all clean rebuild:
+	@${MAKE} TARGET_SUFFIX=${TARGET_SUFFIX} CC=${CC} CFLAGS="${CFLAGS}" \
+	LDFLAGS="${LDFLAGS}" LDLIBS="${LDLIBS}" $@
+
+# =============================================================================
