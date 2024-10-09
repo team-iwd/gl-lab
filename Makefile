@@ -22,7 +22,7 @@ SOURCE_PATH = src
 
 TARGET_SUFFIX ?= out
 
-TARGETS ?= \
+TARGETS = \
 	${SOURCE_PATH}/00-setup.${TARGET_SUFFIX}
 
 # =============================================================================
@@ -42,8 +42,7 @@ build: ${TARGETS}
 
 .c.exe .c.out:
 	@printf "${LOG_PREFIX} Compiling: $@ (from $<)\n"
-	@${CC} $< ${SOURCE_PATH}/external/glad.c -o $@ \
-		${CFLAGS} ${LDFLAGS} ${LDLIBS}
+	@${CC} $< ${SOURCE_PATH}/external/glad.c -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS}
 
 post-build:
 	@printf "${LOG_PREFIX} Build complete.\n"

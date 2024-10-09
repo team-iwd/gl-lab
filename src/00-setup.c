@@ -90,13 +90,15 @@ static void InitExample(void) {
 }
 
 static void UpdateExample(void) {
-    {
-        HandleKeyEvents(), HandleMouseEvents();
+    HandleKeyEvents(), HandleMouseEvents();
 
-        /* TODO: ... */
+/* ========================================================================= */
 
-        glfwSwapBuffers(glfwWindow), glfwPollEvents();
-    }
+    /* TODO: ... */
+
+/* ========================================================================= */
+
+    glfwSwapBuffers(glfwWindow), glfwPollEvents();
 }
 
 static void DeinitExample(void) {
