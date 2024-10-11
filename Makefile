@@ -23,7 +23,8 @@ SOURCE_PATH = src
 TARGET_SUFFIX ?= out
 
 TARGETS = \
-	${SOURCE_PATH}/00-setup.${TARGET_SUFFIX}
+	${SOURCE_PATH}/00-setup.${TARGET_SUFFIX}          \
+	${SOURCE_PATH}/01-vertex_buffer.${TARGET_SUFFIX}
 
 # =============================================================================
 

@@ -7,6 +7,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "gl-lab.h"
+
 /* Macros ================================================================== */
 
 #define LOG(level, ...)                                             \
@@ -98,7 +100,21 @@ static void UpdateExample(void) {
 
 /* ========================================================================= */
 
-    /* TODO: 여기에 실습 코드를 입력하세요. */
+    /*
+        프레임버퍼 (framebuffer)는 비디오 메모리 (video memory, VRAM)와
+        같은 뜻으로, 그래픽 카드 (graphics card)에서 다음으로 그릴 화면의
+        픽셀 정보가 저장되는 곳이다.
+    */
+
+    g1Color pastelGreen = TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f);
+
+    // 프레임버퍼 초기화에 사용될 색상을 설정한다.
+    glClearColor(pastelGreen.r, pastelGreen.g, pastelGreen.b, pastelGreen.a);
+
+    // 프레임 버퍼를 초기화한다.
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // TODO: ...
 
 /* ========================================================================= */
 
