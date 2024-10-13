@@ -61,7 +61,7 @@ static GLFWwindow *glfwWindow;
 static char compileLog[MAX_COMPILE_LOG_LENGTH];
 
 static unsigned int vertexShader, fragmentShader, shaderProgram;
-static unsigned int vertexArrayObject, bufferObject;
+static unsigned int vao, vbo, ebo;
 
 static bool initialized;
 
@@ -144,22 +144,23 @@ static void InitExample(void) {
     {
         float vertices[] = {
             FLT_MAX, -0.5f, -0.5f, FLT_MAX,  // #0
-            FLT_MAX,  0.5f, -0.5f, FLT_MAX,  // #1 
-            FLT_MAX,  0.0f,  0.5f, FLT_MAX   // #2
-        }; 
+            FLT_MAX, 0.5f,  -0.5f, FLT_MAX,  // #1
+            FLT_MAX, 0.0f,  0.5f,  FLT_MAX   // #2
+        };
 
-        glGenVertexArrays(1, &vertexArrayObject);
-        glGenBuffers(1, &bufferObject);
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
 
-        glBindVertexArray(vertexArrayObject);
+        glBindVertexArray(vao);
 
-        glBindBuffer(GL_ARRAY_BUFFER, bufferObject);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER,
                      sizeof vertices,
                      vertices,
                      GL_STATIC_DRAW);
 
         // `vertices[i] = (offset + (i * stride));`
+        // `&vertices[i]`에서부터 시작해서 딱 `size`개만 읽음
         glVertexAttribPointer(
             0,                      // `location`
             2,                      // `size`
@@ -183,7 +184,7 @@ static void UpdateExample(void) {
 
         glUseProgram(shaderProgram);
 
-        glBindVertexArray(vertexArrayObject);
+        glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
@@ -191,10 +192,11 @@ static void UpdateExample(void) {
 }
 
 static void DeinitExample(void) {
-    glDeleteVertexArrays(1, &vertexArrayObject),
-        glDeleteBuffers(1, &bufferObject);
+    {
+        glDeleteVertexArrays(1, &vao), glDeleteBuffers(1, &vbo);
 
-    glDeleteProgram(shaderProgram);
+        glDeleteProgram(shaderProgram);
+    }
 
     glfwTerminate();
 }

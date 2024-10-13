@@ -1,5 +1,6 @@
 /* Includes ================================================================ */
 
+#include <float.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +60,7 @@ static GLFWwindow *glfwWindow;
 
 static char compileLog[MAX_COMPILE_LOG_LENGTH];
 
-static unsigned int vertexShader, fragmentShader, shaderProgram, vao, vbo;
+static unsigned int vertexShader, fragmentShader, shaderProgram;
 
 static bool initialized;
 
@@ -133,35 +134,47 @@ static void InitExample(void) {
     glfwShowWindow(glfwWindow);
 
     {
-        // 정점 셰이더를 컴파일한다.
         CompileVertexShader(vertexShaderSource);
-
-        // 프래그먼트 셰이더를 컴파일한다.
         CompileFragmentShader(fragmentShaderSource);
 
-        // 셰이더 프로그램을 빌드한다.
         LinkShaderProgram();
     }
 
     {
-        // TODO: VAO와 VBO 만들기
+        /* ======================= [실습 코드] ======================= */
+
+        // TODO: ...
+
+        /* ======================= [실습 코드] ======================= */
     }
 }
 
 static void UpdateExample(void) {
     HandleKeyEvents(), HandleMouseEvents();
 
-/* ========================================================================= */
+    {
+        /* ======================= [실습 코드] ======================= */
 
-    /* TODO: 여기에 실습 코드를 입력하세요. */
+        glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
-/* ========================================================================= */
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        /* ======================= [실습 코드] ======================= */
+    }
 
     glfwSwapBuffers(glfwWindow), glfwPollEvents();
 }
 
 static void DeinitExample(void) {
-    glDeleteShader(vertexShader), glDeleteShader(fragmentShader);
+    {
+        /* ======================= [실습 코드] ======================= */
+
+        // TODO: ...
+
+        glDeleteProgram(shaderProgram);
+
+        /* ======================= [실습 코드] ======================= */
+    }
 
     glfwTerminate();
 }
@@ -242,6 +255,8 @@ static void LinkShaderProgram(void) {
             PANIC("failed to link shader program");
         }
     }
+
+    glDeleteShader(vertexShader), glDeleteShader(fragmentShader);
 }
 
 /* ========================================================================= */
