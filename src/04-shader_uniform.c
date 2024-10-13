@@ -84,6 +84,8 @@ static char compileLog[MAX_COMPILE_LOG_LENGTH];
 static unsigned int vertexShader, fragmentShader, shaderProgram;
 static unsigned int vao, vbo, ebo;
 
+static int myColorLocation;
+
 static bool initialized;
 
 /* Private Function Prototypes ============================================= */
@@ -197,6 +199,11 @@ static void InitExample(void) {
 
         glUseProgram(shaderProgram);
 
+        {
+            myColorLocation = glGetUniformLocation(shaderProgram,
+                                                       "myColor");
+        }
+
         /* ======================= [실습 코드] ======================= */
     }
 }
@@ -212,9 +219,6 @@ static void UpdateExample(void) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         {
-            int myColorLocation = glGetUniformLocation(shaderProgram,
-                                                       "myColor");
-
             float colorValue = fabs(sin(glfwGetTime()));
 
             glUniform4f(myColorLocation, colorValue, colorValue, 1.0f, 1.0f);
