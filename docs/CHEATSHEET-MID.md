@@ -195,6 +195,7 @@ flowchart LR
 - 두 번째 과정으로 만들어지는 공간을 VAO (Vertex Array Object)라고 함
     - VAO에는 VBO에 저장된 각 정점 좌표의 비디오 메모리 주소와 그 정점에 대한 속성이 저장됨
     - 따라서, ==**VAO를 가장 먼저 생성하고 그 다음에 VBO를 생성해**== 정점 좌표를 VRAM으로 보낸 다음, 각 정점의 속성을 지정해주어야 함
+    - (그러면... VAO를 레시피, VBO를 재료라고 생각하면 되나...?)
 
 **정점의 인덱스 참조**
 ```c
@@ -211,7 +212,7 @@ float vertices[] = {
 };
 ```
 - `vertices` 배열로 만든 VBO로 사각형을 그린다고 하면, `(#1, #3)`, `(#2, #5)`와 같이 중복되는 좌표가 존재하는 것을 알 수 있음
-- 정점 좌표를 이렇게 저장하면 VRAM 공간이 낭비되기 때문에, 정점 좌표가 아닌 그 좌표의 인덱스로 사각형을 표현할 방법이 필요한데, 이때 `indices`와 같이 ==**정점 좌표의 인덱스들이 저장될 VRAM 공간을 EBO (Element Buffer Object)라고 함**==
+- 정점 좌표를 이렇게 저장하면 VRAM 공간이 낭비되기 때문에, 정점 좌표를 직접 사용하는 대신 각 좌표의 인덱스로 사각형을 표현할 방법이 필요한데, 이때 `indices`와 같이 ==**정점 좌표의 인덱스들이 저장될 VRAM 공간을 EBO (Element Buffer Object)라고 함**==
 ```c
 float vertices[] = { 
      0.5f,  0.5f, 0.0f, 
@@ -229,6 +230,68 @@ unsigned int indices[] = {
 };
 ```
 
+**모델과 메시**
+- 모델 (model)은 현실 세계의 물체를 컴퓨터로 표현한 것을 뜻하며, 메시 (mesh)라고 불리는 삼각형 또는 사각형 조각이 수백, 수천 또는 수만 개가 모여서 만들어짐
+- 다각형 메시로 구성된 모델이 게임 등의 실시간 소프트웨어 (real-time applications)에 많이 사용되는 이유는 ==**GPU가 다각형 처리를 빠르게 할 수 있기 때문임**==
+- 모델을 구성하는 다각형 메시의 개수 (정점 개수)가 많으면 많을수록 모델을 더 정교하게 표현 가능한데, 이것을 LOD (Level of Detail)이라고 함
+
+**표면 법선**
+$$
+\overrightarrow{n}_{surface} = \frac{\overrightarrow{e_1} \times \overrightarrow{e_2}}{|\overrightarrow{e_1} \times \overrightarrow{e_2}|}
+$$
+
+- 표면 법선 (surface normal)은 삼각형 메시에서 모델의 바깥쪽을 향하는 법선 벡터를 뜻함
+- 시계 반대 방향 (counter-clockwise, CCW)으로 정렬된 정점 $v_1, v_2, v_3$를 가진 삼각형의 표면 법선은 $v_1$을 지나는 두 변의 벡터 $\overrightarrow{e_1} = \overrightarrow{v_2 - v_1}$, $\overrightarrow{e_2} = \overrightarrow{v_3 - v_1}$의 외적을 통해 구할 수 있음
+
+**정점에 대한 법선**
+- 삼각형 메시 위의 어떤 ==**정점에 대한 법선 (vertex normal)은 그 정점을 가진 모든 삼각형 메시의 표면 벡터의 평균을 뜻함**==
+
+**GLSL**
+```c
+#version version_number 
+
+in type in_variable_name; 
+in type in_variable_name; 
+
+out type out_variable_name; 
+
+uniform type uniform_name; 
+
+void main() { 
+    out_variable_name = weird_stuff_we_processed; 
+}
+```
+- GLSL (Open**GL** **S**hading **L**anguage)는 셰이더 프로그램을 작성할 때 사용하는 프로그래밍 언어로, C언어와 비슷한 형태를 띠고 있음
+- `int`, `float`, `double`과 `bool` 등의 기본 자료형 외에도 벡터와 행렬을 위한 별도의 자료형이 존재함
+
+**GLSL의 벡터 자료형**
+- 벡터는 `vec2`, `bvec3`, `ivec4`, `uvec3`, `dvec2`와 같이 2 - 4개의 요소를 정의할 때 사용하며, `b`는 `bool`, `i`는 `int`, `u`는 `unsigned int` (`uint`), `d`는 `double`을 뜻함
+- 벡터의 `x`, `y,` `z`, `w` 성분에 접근할 때는 `v.x`, `v.y`, `v.z`, `v.w`를 이용함
+- **스위즐링 (swizzling):** 어떤 벡터를 다른 자료형의 벡터로 변환하고자 할 때는 다음과 같이 벡터의 성분을 "뒤섞어서 (swizzle)" 정의할 수 있음
+```c
+vec2 myVec2 = vec2(1.0f, 0.5f);
+
+// vec3 myVec3 = vec3(1.0f, 0.5f, 1.0f);
+vec3 myVec3 = myVec2.xyx;
+
+// vec4 myVec4 = vec4(1.0f, 1.0f, 0.5f, 1.0f);
+vec4 myVec4 = myVec3.zxyz;
+```
+
+**`in`과 `out` 한정자**
+```c
+layout (location = 0) in vec3 aPosition;
+```
+- `in`과 `out` 키워드는 셰이더의 입력 값과 출력 값을 지정하며, 셰이더 사이에 값을 넘겨줄 때도 사용할 수 있음
+- 예를 들어, 정점 셰이더에서 `out vec4 vertexColor;`가 정의되어 있고 프래그먼트 셰이더에서는 `in vec4 vertexColor;`가 정의되어 있다면, OpenGL에서는 셰이더 프로그램을 링킹할 때 정점 셰이더의 `vertexColor` 값을 그대로 프래그먼트 셰이더에 넘겨줌
+
+**`uniform` 한정자**
+```c
+uniform vec4 myColor;
+```
+- `uniform` 한정자는 모든 셰이더 프로그램에서 사용되는 "전역 변수" (global variable)을 정의할 때 사용됨
+- `uniform`이 붙은 변수는 ==**셰이더 프로그램이 활성화된 상태일 경우**== `glGetUniformLocation()` 함수를 통해 그래픽 파이프라인 외부에서 직접 값을 지정해줄 수 있음
+
 ### 연습 문제
 
 TODO: ...
@@ -236,6 +299,8 @@ TODO: ...
 ---
 
 ## Spaces and Transforms
+
+
 
 ---
 

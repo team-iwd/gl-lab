@@ -200,6 +200,8 @@ static void InitExample(void) {
             glEnableVertexAttribArray(0);
         }
 
+        glUseProgram(shaderProgram);
+
         /* ======================= [실습 코드] ======================= */
     }
 }
@@ -213,8 +215,6 @@ static void UpdateExample(void) {
         glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(shaderProgram);
 
         glDrawElements(GL_LINES,         // `mode`
                        sizeof(indices),  // `count`

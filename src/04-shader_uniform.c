@@ -1,6 +1,7 @@
 /* Includes ================================================================ */
 
 #include <float.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,13 +18,13 @@
         fprintf(stderr, __FILE__ ": " level ": " __VA_ARGS__ "\n"); \
     } while (0)
 
-#define PANIC(...)                         \
-    do {                                   \
-        LOG("error", __VA_ARGS__);         \
-                                           \
-        if (glfwInit()) DeinitExample();   \
-                                           \
-        exit(1);                           \
+#define PANIC(...)                       \
+    do {                                 \
+        LOG("error", __VA_ARGS__);       \
+                                         \
+        if (glfwInit()) DeinitExample(); \
+                                         \
+        exit(1);                         \
     } while (0)
 
 /* User-Defined Macros ===================================================== */
@@ -41,17 +42,37 @@
 
 static const char *vertexShaderSource =
     "#version 320 es\n"
+    "\n"
     "layout (location = 0) in vec3 aPosition;\n"
+    "\n"
     "void main() {\n"
     "    gl_Position = vec4(aPosition.x, aPosition.y, aPosition.z, 1.0);\n"
     "}\0";
 
-static const char *fragmentShaderSource =
-    "#version 320 es\n"
-    "out vec4 fragColor;\n"
-    "void main() {\n"
-    "    fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\0";
+static const char *fragmentShaderSource = "#version 320 es\n"
+                                          "\n"
+                                          "out vec4 fragColor;\n"
+                                          "\n"
+                                          "uniform vec4 myColor;\n"
+                                          "\n"
+                                          "void main() {\n"
+                                          "    fragColor = myColor;\n"
+                                          "}\0";
+
+// clang-format off
+
+static const float vertices[] = { 
+     0.5f,  0.5f, 
+     0.5f, -0.5f, 
+    -0.5f, -0.5f,
+    -0.5f,  0.5f
+};
+
+static const unsigned int indices[] = {
+    0, 1, 3
+};
+
+// clang-format on
 
 /* Private Variables ======================================================= */
 
@@ -111,10 +132,10 @@ static void InitExample(void) {
     glfwMonitor = glfwGetPrimaryMonitor();
 
     glfwWindow = glfwCreateWindow(SCREEN_WIDTH,
-                              SCREEN_HEIGHT,
-                              __FILE__,
-                              NULL,
-                              NULL);
+                                  SCREEN_HEIGHT,
+                                  __FILE__,
+                                  NULL,
+                                  NULL);
 
     if (glfwWindow == NULL) PANIC("failed to create window with GLFW");
 
@@ -125,7 +146,7 @@ static void InitExample(void) {
 
     glfwSetFramebufferSizeCallback(glfwWindow, SetViewport);
 
-    const GLFWvidmode* videoMode = glfwGetVideoMode(glfwMonitor);
+    const GLFWvidmode *videoMode = glfwGetVideoMode(glfwMonitor);
 
     int windowX = (videoMode->width - SCREEN_WIDTH) / 2;
     int windowY = (videoMode->height - SCREEN_HEIGHT) / 2;
@@ -144,36 +165,32 @@ static void InitExample(void) {
     {
         /* ======================= [실습 코드] ======================= */
 
-        float vertices[] = {
-            FLT_MAX, -0.5f, -0.5f, FLT_MAX,  // #0
-            FLT_MAX, 0.5f,  -0.5f, FLT_MAX,  // #1
-            FLT_MAX, 0.0f,  0.5f,  FLT_MAX   // #2
-        };
-
         glGenVertexArrays(1, &vao);
+
         glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
 
         glBindVertexArray(vao);
 
         {
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferData(GL_ARRAY_BUFFER,
-                        sizeof vertices,
-                        vertices,
-                        GL_STATIC_DRAW);
+                         sizeof vertices,
+                         vertices,
+                         GL_STATIC_DRAW);
         }
 
         {
-            // `vertices[i] = (offset + (i * stride));`
-            // `&vertices[i]`에서부터 시작해서 딱 `size`개만 읽음
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         sizeof indices,
+                         indices,
+                         GL_STATIC_DRAW);
+        }
+
+        {
             glVertexAttribPointer(
-                0,                      // `location`
-                2,                      // `size`
-                GL_FLOAT,               // `type`
-                GL_FALSE,               // `normalized`
-                4 * sizeof(float),      // `stride`
-                (void *) sizeof(float)  // `offset`
-            );
+                0, 2, GL_FLOAT, false, 2 * sizeof(float), (void *) 0);
 
             glEnableVertexAttribArray(0);
         }
@@ -194,7 +211,16 @@ static void UpdateExample(void) {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        {
+            int myColorLocation = glGetUniformLocation(shaderProgram,
+                                                       "myColor");
+
+            float colorValue = fabs(sin(glfwGetTime()));
+
+            glUniform4f(myColorLocation, colorValue, colorValue, 1.0f, 1.0f);
+        }
+
+        glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, NULL);
 
         /* ======================= [실습 코드] ======================= */
     }
@@ -206,12 +232,14 @@ static void DeinitExample(void) {
     {
         /* ======================= [실습 코드] ======================= */
 
-        glDeleteVertexArrays(1, &vao), glDeleteBuffers(1, &vbo);
+        glDeleteBuffers(1, &vbo), glDeleteBuffers(1, &ebo);
 
-        glDeleteProgram(shaderProgram);
+        glDeleteVertexArrays(1, &vao);
 
         /* ======================= [실습 코드] ======================= */
     }
+
+    glDeleteProgram(shaderProgram);
 
     glfwTerminate();
 }

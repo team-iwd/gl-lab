@@ -166,35 +166,42 @@ static void InitExample(void) {
         // `vao`가 가리키는 곳에 저장될 것임을 OpenGL 컨텍스트에 알린다.
         glBindVertexArray(vao);
 
-        // `vbo`가 가리키는 곳에 정점 좌표들이
-        // 저장될 것임을 OpenGL 컨텍스트에 알린다.
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        {
+            // `vbo`가 가리키는 곳에 정점 좌표들이
+            // 저장될 것임을 OpenGL 컨텍스트에 알린다.
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-        // 정점 좌표가 저장된 배열을 VRAM으로 보낸다.
-        glBufferData(GL_ARRAY_BUFFER,
-                     sizeof vertices,
-                     vertices,
-                     GL_STATIC_DRAW);
+            // 정점 좌표가 저장된 배열을 VRAM으로 보낸다.
+            glBufferData(GL_ARRAY_BUFFER,
+                        sizeof vertices,
+                        vertices,
+                        GL_STATIC_DRAW);
+        }
 
-        /*
-            아래 문장은 정점 셰이더의 0번 위치 (`layout (location = 0)`)에 대한
-            속성을 지정하는데, 두 번째와 세 번째 인자는 "0번 위치에 있는 정점의 자료형
-            (`vec3`)은 3개의 `float (GL_FLOAT`)`으로 이루어져 있다"를 뜻하고,
+        {
+            /*
+                아래 문장은 정점 셰이더의 0번 위치 (`layout (location = 0)`)에 대한
+                속성을 지정하는데, 두 번째와 세 번째 인자는 "0번 위치에 있는 정점의 
+                자료형 (`vec3`)은 3개의 `float`으로 이루어져 있다"를 뜻하고,
 
-            다섯 번째 인자 ('stride')는 "3개의 `float`으로 이루어진 정점 좌표 1개를 
-            읽은 후, 그 다음 정점 좌표를 읽기 위해서는 시작 지점에서 `3 * sizeof(float)`
-            만큼 이동해야 한다"는 것을 뜻하며, 마지막 인자 ('offset')은 시작 지점을
-            결정한다. 
-            
-            (따라서 인덱스가 `i`인 정점 좌표의 시작 지점은 `offset + (i * stride)`,
-            예를 들면 `vertices`에서 첫 번째 좌표는 `vertices + (0 + (0 * stride))`
-            에서 시작하고, 두 번째 좌표는 `vertices + (0 + (1 * stride))`에서 시작)
-        */
-        glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+                다섯 번째 인자 ('stride')는 "3개의 `float`으로 이루어진 정점 좌표 
+                1개를 읽은 후, 그 다음 정점 좌표를 읽기 위해서는 시작 지점에서 
+                `3 * sizeof(float)` 만큼 이동해야 한다"는 것을 뜻하며, 마지막 
+                인자 ('offset')은 시작 지점을 결정한다. 
+                
+                (따라서 인덱스가 `i`인 정점 좌표의 시작 지점은 `offset + (i * stride)`,
+                예를 들면 `vertices`에서 첫 번째 좌표는 `vertices + (0 + (0 * stride))`
+                에서 시작하고, 두 번째 좌표는 `vertices + (0 + (1 * stride))`에서 시작)
+            */
+            glVertexAttribPointer(
+                0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
 
-        // `vao`가 가리키는 속성 정보를 정점 셰이더의 0번 위치에 넘겨준다.
-        glEnableVertexAttribArray(0);
+            // `vao`가 가리키는 속성 정보를 정점 셰이더의 0번 위치에 넘겨준다.
+            glEnableVertexAttribArray(0);
+        }
+
+        // 셰이더 프로그램을 활성화한다.
+        glUseProgram(shaderProgram);
 
         /* ======================= [실습 코드] ======================= */
     }
@@ -217,8 +224,6 @@ static void UpdateExample(void) {
 
         // 프레임 버퍼를 초기화한다.
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(shaderProgram);
 
         // 게임 화면에 삼각형을 그리기 위해 `vao`를 이용한다.
         glBindVertexArray(vao);

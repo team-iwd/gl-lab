@@ -26,7 +26,8 @@ TARGETS = \
 	${SOURCE_PATH}/00-setup.${TARGET_SUFFIX}              \
 	${SOURCE_PATH}/01-vertex_buffer.${TARGET_SUFFIX}      \
 	${SOURCE_PATH}/02-shader_attributes.${TARGET_SUFFIX}  \
-	${SOURCE_PATH}/03-draw_from_index.${TARGET_SUFFIX}
+	${SOURCE_PATH}/03-draw_from_index.${TARGET_SUFFIX}    \
+	${SOURCE_PATH}/04-shader_uniform.${TARGET_SUFFIX}     \
 
 # =============================================================================
 
