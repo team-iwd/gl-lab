@@ -1,52 +1,26 @@
 /* Includes ================================================================ */
 
-#include <float.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include "gl-lab.h"
-
-/* Macros ================================================================== */
-
-#define LOG(level, ...)                                             \
-    do {                                                            \
-        fprintf(stderr, __FILE__ ": " level ": " __VA_ARGS__ "\n"); \
-    } while (0)
-
-#define PANIC(...)                       \
-    do {                                 \
-        LOG("error", __VA_ARGS__);       \
-                                         \
-        if (glfwInit()) DeinitExample(); \
-                                         \
-        exit(1);                         \
-    } while (0)
 
 /* User-Defined Macros ===================================================== */
 
 // clang-format off
 
-#define SCREEN_WIDTH            1280
-#define SCREEN_HEIGHT           800
-
-#define MAX_COMPILE_LOG_LENGTH  1024
+#define SCREEN_WIDTH   1280
+#define SCREEN_HEIGHT  800
 
 // clang-format on
 
 /* Constants =============================================================== */
 
-static const char *vertexShaderSource =
+static const char *vertexShaderSrc =
     "#version 320 es\n"
     "layout (location = 0) in vec3 aPosition;\n"
     "void main() {\n"
     "    gl_Position = vec4(aPosition.x, aPosition.y, aPosition.z, 1.0);\n"
     "}\0";
 
-static const char *fragmentShaderSource =
+static const char *fragmentShaderSrc =
     "#version 320 es\n"
     "out vec4 fragColor;\n"
     "void main() {\n"
@@ -84,25 +58,14 @@ static const unsigned int indices[] = {
 static GLFWmonitor *glfwMonitor;
 static GLFWwindow *glfwWindow;
 
-static char compileLog[MAX_COMPILE_LOG_LENGTH];
-
 static unsigned int vertexShader, fragmentShader, shaderProgram;
 static unsigned int vao, vbo, ebo;
-
-static bool initialized;
 
 /* Private Function Prototypes ============================================= */
 
 static void InitExample(void);
 static void UpdateExample(void);
 static void DeinitExample(void);
-
-static void CompileVertexShader(const char *vertexShaderSource);
-static void CompileFragmentShader(const char *fragmentShaderSource);
-
-static void LinkShaderProgram(void);
-
-static void SetViewport(GLFWwindow *glfwWindow, int width, int height);
 
 static void HandleKeyEvents(void);
 static void HandleMouseEvents(void);
@@ -123,7 +86,7 @@ int main(void) {
 /* Private Functions ======================================================= */
 
 static void InitExample(void) {
-    if (!glfwInit()) PANIC("failed to initialize GLFW");
+    if (!glfwInit()) GLAB_PANIC("failed to initialize GLFW");
 
     {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -142,12 +105,13 @@ static void InitExample(void) {
                                   NULL,
                                   NULL);
 
-    if (glfwWindow == NULL) PANIC("failed to create window with GLFW");
+    if (glfwWindow == NULL) 
+        GLAB_PANIC("failed to create window with GLFW");
 
     glfwMakeContextCurrent(glfwWindow);
 
     if (!gladLoadGLES2Loader((GLADloadproc) glfwGetProcAddress))
-        PANIC("failed to initialize GLAD");
+        GLAB_PANIC("failed to initialize GLAD");
 
     glfwSetFramebufferSizeCallback(glfwWindow, SetViewport);
 
@@ -161,10 +125,10 @@ static void InitExample(void) {
     glfwShowWindow(glfwWindow);
 
     {
-        CompileVertexShader(vertexShaderSource);
-        CompileFragmentShader(fragmentShaderSource);
+        vertexShader = CompileVertexShader(vertexShaderSrc);
+        fragmentShader = CompileFragmentShader(fragmentShaderSrc);
 
-        LinkShaderProgram();
+        shaderProgram = LinkShaderProgram(vertexShader, fragmentShader);
     }
 
     {
@@ -242,92 +206,6 @@ static void DeinitExample(void) {
     glDeleteProgram(shaderProgram);
 
     glfwTerminate();
-}
-
-/* ========================================================================= */
-
-static void CompileVertexShader(const char *vertexShaderSource) {
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-
-    glCompileShader(vertexShader);
-
-    {
-        int success = 0;
-
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-        if (!success) {
-            glGetShaderInfoLog(vertexShader,
-                               sizeof compileLog,
-                               NULL,
-                               compileLog);
-
-            fprintf(stderr, __FILE__ ": [SHADER] %s", compileLog);
-
-            PANIC("failed to compile vertex shader");
-        }
-    }
-}
-
-static void CompileFragmentShader(const char *fragmentShaderSource) {
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-
-    glCompileShader(fragmentShader);
-
-    {
-        int success = 0;
-
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-        if (!success) {
-            glGetShaderInfoLog(fragmentShader,
-                               sizeof compileLog,
-                               NULL,
-                               compileLog);
-
-            fprintf(stderr, __FILE__ ": [SHADER] %s", compileLog);
-
-            PANIC("failed to compile fragment shader");
-        }
-    }
-}
-
-static void LinkShaderProgram(void) {
-    shaderProgram = glCreateProgram();
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-
-    glLinkProgram(shaderProgram);
-
-    {
-        int success = 0;
-
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-
-        if (!success) {
-            glGetProgramInfoLog(shaderProgram,
-                                sizeof compileLog,
-                                NULL,
-                                compileLog);
-
-            fprintf(stderr, __FILE__ ": [SHADER] %s", compileLog);
-
-            PANIC("failed to link shader program");
-        }
-    }
-
-    glDeleteShader(vertexShader), glDeleteShader(fragmentShader);
-}
-
-/* ========================================================================= */
-
-static void SetViewport(GLFWwindow *glfwWindow, int width, int height) {
-    glViewport(0, 0, width, height);
 }
 
 /* ========================================================================= */
