@@ -1,6 +1,6 @@
 # =============================================================================
 
-.PHONY: all clean rebuild
+.PHONY: all clean exam rebuild
 
 # =============================================================================
 
@@ -19,7 +19,7 @@ LDLIBS = -lglfw3 -lgdi32 -lopengl32 -lwinmm -lpthread
 
 # =============================================================================
 
-all clean rebuild:
+all clean exam rebuild:
 	@${MAKE} TARGET_SUFFIX=${TARGET_SUFFIX} CC=${CC} CFLAGS="${CFLAGS}" \
 	LDFLAGS="${LDFLAGS}" LDLIBS="${LDLIBS}" $@
 

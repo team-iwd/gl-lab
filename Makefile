@@ -1,6 +1,6 @@
 # =============================================================================
 
-.PHONY: all clean rebuild
+.PHONY: all clean exam rebuild
 .SUFFIXES: .c .exe .out
 
 # =============================================================================
@@ -20,7 +20,7 @@ LOG_PREFIX = ${_COLOR_BEGIN}${PROJECT_FULL_NAME}:${_COLOR_END}
 INCLUDE_PATH = include
 SOURCE_PATH = src
 
-TARGET_SUFFIX ?= out
+TARGET_SUFFIX = out
 
 TARGETS = \
 	${SOURCE_PATH}/00-setup.${TARGET_SUFFIX}              \
@@ -42,6 +42,8 @@ pre-build:
 	@printf "${LOG_PREFIX} Using: '${CC}' to build all examples.\n"
 
 build: ${TARGETS}
+
+exam: ${SOURCE_PATH}/99-custom_exercise.${TARGET_SUFFIX}
 
 .c.exe .c.out:
 	@printf "${LOG_PREFIX} Compiling: $@ (from $<)\n"
