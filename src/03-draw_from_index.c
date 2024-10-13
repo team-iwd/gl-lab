@@ -62,9 +62,19 @@ static const float vertices[] = {
     -0.5f,  0.5f
 };
 
-static const unsigned int indices[] = { 
+static const unsigned int indices[] = {
+/*
     0, 1, 3,
-    1, 2, 3 
+    1, 2, 3,
+*/
+
+    0, 1,
+    1, 3,
+    3, 0,
+
+    1, 2,
+    2, 3,
+    3, 1
 };
 
 // clang-format on
@@ -206,7 +216,7 @@ static void UpdateExample(void) {
 
         glUseProgram(shaderProgram);
 
-        glDrawElements(GL_TRIANGLES,     // `mode`
+        glDrawElements(GL_LINES,         // `mode`
                        sizeof(indices),  // `count`
                        GL_UNSIGNED_INT,  // `type`
                        NULL              // `indices`
