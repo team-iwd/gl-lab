@@ -1,5 +1,6 @@
 /* Includes ================================================================ */
 
+#include <float.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,9 +143,9 @@ static void InitExample(void) {
 
     {
         float vertices[] = {
-            0.0f, -0.5f, -0.5f, 0.0f,  // #0
-            0.0f,  0.5f, -0.5f, 0.0f,  // #1 
-            0.0f,  0.0f,  0.5f, 0.0f   // #2
+            FLT_MAX, -0.5f, -0.5f, FLT_MAX,  // #0
+            FLT_MAX,  0.5f, -0.5f, FLT_MAX,  // #1 
+            FLT_MAX,  0.0f,  0.5f, FLT_MAX   // #2
         }; 
 
         glGenVertexArrays(1, &vertexArrayObject);
@@ -161,10 +162,10 @@ static void InitExample(void) {
         // `vertices[i] = (offset + (i * stride));`
         glVertexAttribPointer(
             0,                      // `location`
-            3,                      // `size`
+            2,                      // `size`
             GL_FLOAT,               // `type`
             GL_FALSE,               // `normalized`
-            3 * sizeof(float),      // `stride`
+            4 * sizeof(float),      // `stride`
             (void *) sizeof(float)  // `offset`
         );
 
