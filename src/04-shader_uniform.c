@@ -45,8 +45,13 @@ static const char *vertexShaderSource =
     "\n"
     "layout (location = 0) in vec3 aPosition;\n"
     "\n"
+    "uniform vec3 myPosition;\n"
+    "\n"
     "void main() {\n"
-    "    gl_Position = vec4(aPosition.x, aPosition.y, aPosition.z, 1.0);\n"
+    "    gl_Position = vec4(myPosition.x + aPosition.x, \n"
+    "        myPosition.y + aPosition.y, \n"
+    "        myPosition.z + aPosition.z, \n"
+    "        1.0f); \n"
     "}\0";
 
 static const char *fragmentShaderSource = "#version 320 es\n"
@@ -79,12 +84,20 @@ static const unsigned int indices[] = {
 static GLFWmonitor *glfwMonitor;
 static GLFWwindow *glfwWindow;
 
+static float myPosition[3] = {
+    0.0f,  // `x`
+    0.0f,  // `y`
+    0.0f   // `z`
+};
+
 static char compileLog[MAX_COMPILE_LOG_LENGTH];
+
+static double elapsedTime, deltaTime;
 
 static unsigned int vertexShader, fragmentShader, shaderProgram;
 static unsigned int vao, vbo, ebo;
 
-static int myColorLocation;
+static int myPositionLocation, myColorLocation;
 
 static bool initialized;
 
@@ -103,6 +116,8 @@ static void SetViewport(GLFWwindow *glfwWindow, int width, int height);
 
 static void HandleKeyEvents(void);
 static void HandleMouseEvents(void);
+
+static void UpdateDeltaTime(void);
 
 /* Public Functions ======================================================== */
 
@@ -200,8 +215,9 @@ static void InitExample(void) {
         glUseProgram(shaderProgram);
 
         {
-            myColorLocation = glGetUniformLocation(shaderProgram,
-                                                       "myColor");
+            myPositionLocation = glGetUniformLocation(shaderProgram,
+                                                      "myPosition");
+            myColorLocation = glGetUniformLocation(shaderProgram, "myColor");
         }
 
         /* ======================= [실습 코드] ======================= */
@@ -209,7 +225,7 @@ static void InitExample(void) {
 }
 
 static void UpdateExample(void) {
-    HandleKeyEvents(), HandleMouseEvents();
+    HandleKeyEvents(), HandleMouseEvents(), UpdateDeltaTime();
 
     {
         /* ======================= [실습 코드] ======================= */
@@ -337,11 +353,32 @@ static void SetViewport(GLFWwindow *glfwWindow, int width, int height) {
 /* ========================================================================= */
 
 static void HandleKeyEvents(void) {
-    /* TODO: ... */
+    bool keyPressed = false;
+
+    float movementSpeed = 0.1f * deltaTime;
+
+    if (glfwGetKey(glfwWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
+        keyPressed = !keyPressed, myPosition[0] -= movementSpeed;
+    else if (glfwGetKey(glfwWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        keyPressed = !keyPressed, myPosition[0] += movementSpeed;
+
+    // 키보드 방향키 입력에 따라 삼각형의 위치를 변경한다.
+    if (keyPressed)
+        glUniform3f(myPositionLocation,
+                        myPosition[0],
+                        myPosition[1],
+                        myPosition[2]);
 }
 
 static void HandleMouseEvents(void) {
     /* TODO: ... */
+}
+
+static void UpdateDeltaTime(void) {
+    double currentTime = glfwGetTime();
+
+    deltaTime = currentTime - elapsedTime;
+    elapsedTime = currentTime;
 }
 
 /* ========================================================================= */

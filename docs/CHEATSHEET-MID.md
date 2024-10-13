@@ -263,6 +263,7 @@ void main() {
 ```
 - GLSL (Open**GL** **S**hading **L**anguage)는 셰이더 프로그램을 작성할 때 사용하는 프로그래밍 언어로, C언어와 비슷한 형태를 띠고 있음
 - `int`, `float`, `double`과 `bool` 등의 기본 자료형 외에도 벡터와 행렬을 위한 별도의 자료형이 존재함
+- 벡터와 행렬도 기본 자료형과 마찬가지로 `+`, `-`, `+=` 등의 [**산술 연산자를 통해 두 벡터의 합, 행렬의 곱 등을 계산할 수 있음**](https://en.wikibooks.org/wiki/GLSL_Programming/Vector_and_Matrix_Operations)
 
 **GLSL의 벡터 자료형**
 - 벡터는 `vec2`, `bvec3`, `ivec4`, `uvec3`, `dvec2`와 같이 2 - 4개의 요소를 정의할 때 사용하며, `b`는 `bool`, `i`는 `int`, `u`는 `unsigned int` (`uint`), `d`는 `double`을 뜻함
@@ -276,6 +277,9 @@ vec3 myVec3 = myVec2.xyx;
 
 // vec4 myVec4 = vec4(1.0f, 1.0f, 0.5f, 1.0f);
 vec4 myVec4 = myVec3.zxyz;
+
+// myVec2 = vec2(0.5f, 1.0f);
+myVec2.yx = vec2(1.0f, 0.5f);
 ```
 
 **`in`과 `out` 한정자**
