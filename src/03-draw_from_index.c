@@ -200,10 +200,10 @@ static void DeinitExample(void) {
 
         glDeleteVertexArrays(1, &vao);
 
+        glDeleteProgram(shaderProgram);
+
         /* ======================= [실습 코드] ======================= */
     }
-
-    glDeleteProgram(shaderProgram);
 
     glfwTerminate();
 }

@@ -18,24 +18,31 @@ static const char *vertexShaderSrc =
     "\n"
     "layout (location = 0) in vec3 aPosition;\n"
     "\n"
-    "uniform vec3 myPosition;\n"
-    "\n"
     "void main() {\n"
-    "    gl_Position = vec4(myPosition.x + aPosition.x, \n"
-    "        myPosition.y + aPosition.y, \n"
-    "        myPosition.z + aPosition.z, \n"
-    "        1.0f); \n"
+    "    gl_Position = vec4(aPosition, 1.0f); \n"
     "}\0";
 
-static const char *fragmentShaderSrc = "#version 320 es\n"
-                                          "\n"
-                                          "out vec4 fragColor;\n"
-                                          "\n"
-                                          "uniform vec4 myColor;\n"
-                                          "\n"
-                                          "void main() {\n"
-                                          "    fragColor = myColor;\n"
-                                          "}\0";
+static const char *fragmentShaderSrc1 =
+    "#version 320 es\n"
+    "\n"
+    "out vec4 fragColor;\n"
+    "\n"
+    "uniform vec4 myColor1;\n"
+    "\n"
+    "void main() {\n"
+    "    fragColor = myColor1;\n"
+    "}\0";
+
+static const char *fragmentShaderSrc2 =
+    "#version 320 es\n"
+    "\n"
+    "out vec4 fragColor;\n"
+    "\n"
+    "uniform vec4 myColor2;\n"
+    "\n"
+    "void main() {\n"
+    "    fragColor = myColor2;\n"
+    "}\0";
 
 // clang-format off
 
@@ -46,8 +53,12 @@ static const float vertices[] = {
     -0.5f,  0.5f
 };
 
-static const unsigned int indices[] = {
+static const unsigned int indices1[] = {
     0, 1, 3
+};
+
+static const unsigned int indices2[] = {
+    1, 2, 3
 };
 
 // clang-format on
@@ -57,18 +68,12 @@ static const unsigned int indices[] = {
 static GLFWmonitor *glfwMonitor;
 static GLFWwindow *glfwWindow;
 
-static float myPosition[3] = {
-    0.0f,  // `x`
-    0.0f,  // `y`
-    0.0f   // `z`
-};
+static unsigned int vertexShader, fragmentShader1, fragmentShader2,
+    shaderProgram1, shaderProgram2;
 
-static unsigned int vertexShader, fragmentShader, shaderProgram;
-static unsigned int vao, vbo, ebo;
+static unsigned int vao1, vao2, vbo1, vbo2, ebo1, ebo2;
 
-static int myPositionLocation, myColorLocation;
-
-static bool initialized;
+static int myColor1Location, myColor2Location;
 
 /* Private Function Prototypes ============================================= */
 
@@ -134,51 +139,80 @@ static void InitExample(void) {
 
     {
         vertexShader = CompileVertexShader(vertexShaderSrc);
-        fragmentShader = CompileFragmentShader(fragmentShaderSrc);
 
-        shaderProgram = LinkShaderProgram(vertexShader, fragmentShader);
+        fragmentShader1 = CompileFragmentShader(fragmentShaderSrc1);
+        fragmentShader2 = CompileFragmentShader(fragmentShaderSrc2);
+
+        shaderProgram1 = LinkShaderProgram(vertexShader, fragmentShader1);
+        shaderProgram2 = LinkShaderProgram(vertexShader, fragmentShader2);
     }
 
     {
         /* ======================= [실습 코드] ======================= */
 
-        glGenVertexArrays(1, &vao);
+        glGenVertexArrays(1, &vao1), glGenVertexArrays(1, &vao2);
 
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ebo);
+        glGenBuffers(1, &vbo1), glGenBuffers(1, &vbo2);
+        glGenBuffers(1, &ebo1), glGenBuffers(1, &ebo2);
 
-        glBindVertexArray(vao);
+        glBindVertexArray(vao1);
 
         {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo1);
             glBufferData(GL_ARRAY_BUFFER,
                          sizeof vertices,
                          vertices,
                          GL_STATIC_DRAW);
-        }
 
-        {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo1);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         sizeof indices,
-                         indices,
+                         sizeof indices1,
+                         indices1,
                          GL_STATIC_DRAW);
-        }
 
-        {
-            glVertexAttribPointer(
-                0, 2, GL_FLOAT, false, 2 * sizeof(float), (void *) 0);
+            glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, (void *) 0);
 
             glEnableVertexAttribArray(0);
         }
 
-        glUseProgram(shaderProgram);
+        glBindVertexArray(vao2);
 
         {
-            myPositionLocation = glGetUniformLocation(shaderProgram,
-                                                      "myPosition");
-            myColorLocation = glGetUniformLocation(shaderProgram, "myColor");
+            glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+            glBufferData(GL_ARRAY_BUFFER,
+                         sizeof vertices,
+                         vertices,
+                         GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo2);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         sizeof indices2,
+                         indices2,
+                         GL_STATIC_DRAW);
+
+            glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, (void *) 0);
+
+            glEnableVertexAttribArray(0);
         }
+
+        {
+            glUseProgram(shaderProgram1);
+
+            myColor1Location = glGetUniformLocation(shaderProgram1, "myColor1");
+            glUniform4f(myColor1Location, GLAB_TO_RGB01(224.0f, 240.0f, 217.0f, 255.0f));
+
+            glUseProgram(shaderProgram2);
+
+            myColor2Location = glGetUniformLocation(shaderProgram2, "myColor2");
+            glUniform4f(myColor2Location, GLAB_TO_RGB01(184.0f, 216.0f, 190.0f, 255.0f));
+        }
+
+        glBindVertexArray(0U);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0U);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
+
+        glUseProgram(0U);
 
         /* ======================= [실습 코드] ======================= */
     }
@@ -195,12 +229,18 @@ static void UpdateExample(void) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         {
-            float colorValue = fabs(sin(glfwGetTime()));
-
-            glUniform4f(myColorLocation, colorValue, colorValue, 1.0f, 1.0f);
+            glUseProgram(shaderProgram1);
+        
+            glBindVertexArray(vao1);
+            glDrawElements(GL_TRIANGLES, sizeof indices1, GL_UNSIGNED_INT, NULL);
         }
 
-        glDrawElements(GL_TRIANGLES, sizeof(indices), GL_UNSIGNED_INT, NULL);
+        {
+            glUseProgram(shaderProgram2);
+        
+            glBindVertexArray(vao2);
+            glDrawElements(GL_TRIANGLES, sizeof indices2, GL_UNSIGNED_INT, NULL);
+        }
 
         /* ======================= [실습 코드] ======================= */
     }
@@ -212,11 +252,11 @@ static void DeinitExample(void) {
     {
         /* ======================= [실습 코드] ======================= */
 
-        glDeleteBuffers(1, &vbo), glDeleteBuffers(1, &ebo);
+        glDeleteBuffers(1, &vbo1), glDeleteBuffers(1, &vbo2);
 
-        glDeleteVertexArrays(1, &vao);
+        glDeleteVertexArrays(1, &vao1), glDeleteVertexArrays(1, &vao2);
 
-        glDeleteProgram(shaderProgram);
+        glDeleteShader(shaderProgram1), glDeleteShader(shaderProgram2);
 
         /* ======================= [실습 코드] ======================= */
     }
@@ -227,21 +267,7 @@ static void DeinitExample(void) {
 /* ========================================================================= */
 
 static void HandleKeyEvents(void) {
-    bool keyPressed = false;
-
-    float movementSpeed = 0.1f * GetDeltaTime();
-
-    if (glfwGetKey(glfwWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
-        keyPressed = !keyPressed, myPosition[0] -= movementSpeed;
-    else if (glfwGetKey(glfwWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        keyPressed = !keyPressed, myPosition[0] += movementSpeed;
-
-    // 키보드 방향키 입력에 따라 삼각형의 위치를 변경한다.
-    if (keyPressed)
-        glUniform3f(myPositionLocation,
-                        myPosition[0],
-                        myPosition[1],
-                        myPosition[2]);
+    /* TODO: ... */
 }
 
 static void HandleMouseEvents(void) {

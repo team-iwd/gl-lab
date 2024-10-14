@@ -61,8 +61,6 @@ static GLFWwindow *glfwWindow;
 static unsigned int vertexShader, fragmentShader, shaderProgram;
 static unsigned int vao, vbo, ebo;
 
-static int myPositionLocation, myColorLocation;
-
 /* Private Function Prototypes ============================================= */
 
 static void InitExample(void);
@@ -176,12 +174,6 @@ static void InitExample(void) {
 
         glUseProgram(shaderProgram);
 
-        {
-            myPositionLocation = glGetUniformLocation(shaderProgram,
-                                                      "myPosition");
-            myColorLocation = glGetUniformLocation(shaderProgram, "myColor");
-        }
-
         /* ======================= [실습 코드] ======================= */
     }
 }
@@ -212,10 +204,10 @@ static void DeinitExample(void) {
 
         glDeleteVertexArrays(1, &vao);
 
+        glDeleteProgram(shaderProgram);
+
         /* ======================= [실습 코드] ======================= */
     }
-
-    glDeleteProgram(shaderProgram);
 
     glfwTerminate();
 }
