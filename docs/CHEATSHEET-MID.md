@@ -186,6 +186,7 @@ flowchart LR
 - ==**정점 셰이더를 거친 모든 정점은 반드시 NDC에 속해야 게임 화면에 그려질 수 있음**==
 
 **정점의 표현**
+[![Image by Joey de Vries, from LearnOpenGL](https://learnopengl.com/img/getting-started/vertex_array_objects_ebo.png)](https://learnopengl.com/Getting-started/Hello-Triangle)
 - 프레임버퍼 (framebuffer)는 비디오 메모리 (video memory, VRAM)와 같은 뜻으로, 그래픽 카드 (graphics card)에서 다음으로 그릴 화면의 픽셀 정보가 저장되는 곳임
 - 각 정점 (vertex)을 정점 셰이더에 넘겨주기 위해서는 2개 과정이 필요함
     - 모든 정점의 좌표를 1차원의 `float` 배열 (`float []`)에 때려넣고, 그 배열을 `glBufferData()` 함수를 통해 VRAM에 저장

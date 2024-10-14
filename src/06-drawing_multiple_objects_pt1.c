@@ -207,12 +207,44 @@ static void InitExample(void) {
             glUniform4f(myColor2Location, GLAB_TO_RGB01(184.0f, 216.0f, 190.0f, 255.0f));
         }
 
-        glBindVertexArray(0U);
+        {
+            /*
+                VBO는 VAO보다 먼저 언바인딩해도 되지만, EBO는 그렇게 하면 안되는 이유?
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0U);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
+                ```
+                // VAO의 (진짜는 아닌) 대략적인 형태를 C 구조체로 표현한 것
+                typedef struct VAO_ {
+                    struct {
+                        Vector3 *position;  // VBO에 저장된 정점 좌표의 
+                                            // 메모리 주소
+                        // ...
+                    } *attributes;          // 정점 속성 배열
+                    GLuint *ebo;            // EBO 배열
+                    int attributeCount;     // 정점 속성의 개수
+                    int eboLength;          // EBO 배열의 길이
+                } VAO;
+                ```
 
-        glUseProgram(0U);
+                1. VBO는 `glBufferData()`가 실행된 후 VAO와는 전혀 관계없는, 별도의
+                   VRAM 영역에 할당되며, `glVertexAttribPointer()`가 호출되기 전까지는
+                   VBO의 각 정점 좌표의 VRAM 주소가 VAO에 저장되지 않는다.
+
+                   따라서 VBO를 VAO보다 먼저 언바인딩하더라도 VAO에는 아무런 영향을
+                   주지 않는다.
+
+                2. EBO는 VAO 내의 공간에 저장되기 때문에, EBO를 먼저 언바인딩해버리면
+                   VAO에 저장되어 있던 EBO의 VRAM 주소가 사라지게 된다. 따라서 VAO를
+                   먼저 언바인딩해야 VAO에 영향을 주지 않고 EBO까지 안전하게 
+                   언바인딩할 수 있다.
+            */
+
+            glBindVertexArray(0U);
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0U);
+            // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
+
+            glUseProgram(0U);
+        }
 
         /* ======================= [실습 코드] ======================= */
     }
@@ -227,6 +259,10 @@ static void UpdateExample(void) {
         glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
         glClear(GL_COLOR_BUFFER_BIT);
+
+        {
+            glUseProgram(0U), glBindVertexArray(0U);
+        }
 
         {
             glUseProgram(shaderProgram1);
