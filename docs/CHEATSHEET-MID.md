@@ -305,11 +305,154 @@ TODO: ...
 
 ## Spaces and Transforms
 
+### 이론 정리
 
+```mermaid
+flowchart LR
+    A[Object Space] --(world trans.)--> B[World Space]
+    B --(view trans.)--> C:::hidden
+
+    classDef hidden display: none;
+```
+```mermaid
+flowchart LR
+    A[Camera Space] --(projection trans.)--> B[Clip Space]
+    B --> C[Viewport]
+```
+
+**2차원 공간에서의 크기 조절 행렬**
+$$
+\begin{bmatrix}
+s_x & 0 \\
+0 & s_y
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y
+\end{bmatrix}
+=
+\begin{bmatrix}
+s_x \cdot x \\
+x_y \cdot y
+\end{bmatrix}
+$$
+- 크기 조절 행렬 (scaling matrix)은 다각형을 구성하는 각 좌표의 $x$성분과 $y$성분에 각각 $s_x$와 $s_y$를 곱함
+
+**2차원 공간에서의 회전 행렬**
+$$
+\begin{bmatrix}
+cos \theta & -sin \theta \\
+sin \theta & cos \theta
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y
+\end{bmatrix}
+=
+R(\theta)
+\begin{bmatrix}
+x \\
+y
+\end{bmatrix}
+=
+\begin{bmatrix}
+x^\prime \\
+y^\prime
+\end{bmatrix}
+$$
+- $x = rcos\phi, y = rsin\phi$, 즉 $(x, y)$가 중심이 원점이고 반지름이 $r$인 원 위에 있는 경우 $x^\prime = rcos(\phi + \theta)$, $y^\prime = rsin(\phi + \theta)$가 되고, 삼각 함수의 덧셈 법칙으로 전개하면 회전 행렬 (rotation matrix) $R(\theta)$를 구할 수 있음
+- $R(\theta)$는 ==**벡터를 원점 기준으로 반시계 방향으로 회전**==시키는데, $\theta$가 음수일 경우 $R(\theta)$는 벡터를 원점 기준으로 시계 방향으로 회전시킴
+
+**2차원 공간에서의 이동 행렬**
+$$
+\begin{bmatrix}
+x \\
+y
+\end{bmatrix} +
+\begin{bmatrix}
+d_x \\
+d_y
+\end{bmatrix} =
+\begin{bmatrix}
+x + d_x \\
+y + d_y
+\end{bmatrix}
+$$
+- ==**이동 (translation)은 크기 조절이나 회전과 달리, 행렬의 곱으로 표현할 수 없음**== $\rightarrow$ 동차 좌표계 (homogeneous coordinates) 이용!
+
+**동차 좌표계**
+$$
+\begin{bmatrix}
+1 & 0 & d_x \\
+0 & 1 & d_y \\
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y \\
+w
+\end{bmatrix} =
+\begin{bmatrix}
+x + d_x \\
+y + d_y \\\
+w
+\end{bmatrix}
+$$
+- $n$차원 공간의 좌표, 즉 $n$개의 성분을 가진 점을 $n + 1$의 성분을 가진 벡터로 표현하는 좌표계
+- 예를 들면, 2차원 공간의 점 $(x, y)$는 성분을 하나 더 추가하여 $(wx, wy, w)$의 형태로 나타낼 수 있음
+- ==**동차 좌표계를 이용하면 좌표의 이동을 행렬의 곱으로 표현 가능**==
+- 동차 좌표 $(wx, wy, w)$에서 원래 좌표를 구할 때는 마지막 성분이 1이 되도록 모든 성분을 $w$로 나누면 됨 $\rightarrow$ $(\frac{x}{w}, \frac{y}{w}, 1)$
+
+**변환 행렬**
+- 앞에서 정리한 크기 조절, 이동 및 회전 연산을 변환 (transformation)이라고 함
+- 변환은 행렬 곱으로 표현되므로 교환 법칙이 성립하지 않음
+- 원점이 아닌 다른 점 $(a, b$)를 기준으로 회전 연산을 하려는 경우
+    1. 점 $(x, y)$를 $(-a, -b)$만큼 이동시키고...
+    2. $(x - a, y - b)$를 원점을 기준으로 회전시킨 다음...
+    3. 그 점을 $(a, b)$만큼 다시 이동시키면 됨!
+
+**아핀 변환**
+$$
+S_h =
+\begin{bmatrix}
+s_x & 0 & 0 \\
+0 & s_y & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+, \ R_h(\theta) =
+\begin{bmatrix}
+cos \theta & -sin \theta & 0 \\
+sin \theta & cos \theta & 0 \\
+0 & 0 & 1
+\end{bmatrix}, \
+T_h =
+\begin{bmatrix}
+1 & 0 & d_x \\
+0 & 1 & d_y \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+- 아핀 변환 (affine transform)은 크기 조절, 회전, 반사 (reflection) 등의 선형 변환 (linear transform) 연산, 그리고 이동 연산을 가리킴
+- 아핀 변환 행렬은 몇 개가 주어지든 항상 하나의 행렬로 결합할 수 있으며, ==**아핀 변환 행렬의 마지막 행은 반드시 $\begin{bmatrix} 0 & 0 & 1\end{bmatrix}$의 형태를 가짐**==
+- 마지막 행을 제외한 $2 \times 3$ 행렬은 왼쪽 $2 \times 2$ 행렬 ($L$)과 오른쪽 $2 \times 1$ 열 벡터 ($t$)를 합친 $\begin{bmatrix} L \ | \ t\end{bmatrix}$ 형태로 볼 수 있으며, 이때 $L$에는 크기 조절과 회전 연산만이 포함되고 열 벡터 $t$는 이동 연산까지 포함됨
+- 어떤 점 $p$에 아핀 변환을 적용할 때는 먼저 $L$을 적용, 즉 크기 조절과 회전을 먼저 하고 그 다음에 $t$를 적용하여 최종 위치 $Lp + t$를 구할 수 있음
+
+**강체 운동**
+- 변환 행렬에 오직 회전과 이동 연산만이 포함된 경우 물체의 회전 각도와 위치만 변하고 물체의 모양은 변경하지 않으므로, 이러한 행렬을 강체 운동 (rigid-body motion) 행렬이라고도 함
+
+### 연습 문제
+
+TODO: ...
 
 ---
 
 ## Vertex Processing
+
+### 이론 정리
+
+### 연습 문제
+
+TODO: ...
 
 ---
 

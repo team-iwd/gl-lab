@@ -29,7 +29,7 @@ TARGETS = \
 	${SOURCE_PATH}/03-draw_from_index.${TARGET_SUFFIX}           \
 	${SOURCE_PATH}/04-shader_uniform_pt1.${TARGET_SUFFIX}        \
 	${SOURCE_PATH}/05-shader_uniform_pt2.${TARGET_SUFFIX}        \
-	${SOURCE_PATH}/06-drawing_multiple_objects_pt1.${TARGET_SUFFIX}  \
+	${SOURCE_PATH}/06-drawing_multiple_objects.${TARGET_SUFFIX}  \
 
 # =============================================================================
 
