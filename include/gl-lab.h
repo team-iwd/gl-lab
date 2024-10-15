@@ -23,44 +23,81 @@ extern "C" {
 
 /* Macro Constants ========================================================= */
 
-#define MAX_COMPILE_LOG_LENGTH  1024
+#define MAX_COMPILE_LOG_LENGTH 1024
 
 /* Macros ================================================================== */
 
-#define INVERSE_UCHAR_MAX  (1.0f / UCHAR_MAX)
+#define INVERSE_UCHAR_MAX (1.0f / UCHAR_MAX)
 
-#define GLAB_LOG(level, ...)                                        \
+#define GB_LOG(level, ...)                                          \
     do {                                                            \
         fprintf(stderr, __FILE__ ": " level ": " __VA_ARGS__ "\n"); \
     } while (0)
 
-#define GLAB_PANIC(...)                    \
-    do {                                   \
-        GLAB_LOG("error", __VA_ARGS__);    \
-                                           \
-        exit(1);                           \
+#define GB_PANIC(...)                 \
+    do {                              \
+        GB_LOG("error", __VA_ARGS__); \
+                                      \
+        exit(1);                      \
     } while (0)
 
-#define GLAB_TO_RGB01(r, g, b, a)  \
-    (r) * INVERSE_UCHAR_MAX,       \
-    (g) * INVERSE_UCHAR_MAX,       \
-    (b) * INVERSE_UCHAR_MAX,       \
-    (a) * INVERSE_UCHAR_MAX        \
+#define GB_TO_RGB01(r, g, b, a)                                              \
+    (r) * INVERSE_UCHAR_MAX, (g) *INVERSE_UCHAR_MAX, (b) *INVERSE_UCHAR_MAX, \
+        (a) *INVERSE_UCHAR_MAX
 
 /* Public Functions ======================================================== */
 
-GLuint CompileVertexShader(const char *const vertexShaderSrc);
-GLuint CompileFragmentShader(const char *const fragmentShaderSrc);
-GLuint LinkShaderProgram(GLuint vertexShader, GLuint fragmentShader);
+GLFWwindow *gbCreateWindow(int width, int height, const char *title);
+void gbReleaseWindow(GLFWwindow *window);
 
 /* ========================================================================= */
 
-void SetViewport(GLFWwindow *glfwWindow, int width, int height);
+GLuint gbCreateVertexArray(void);
+void gbReleaseVertexArray(GLuint vertexArrayId);
+void gbBindVertexArray(GLuint vertexArrayId);
+void gbUnbindVertexArray(void);
 
 /* ========================================================================= */
 
-double GetDeltaTime(void);
-void UpdateDeltaTime(void);
+GLuint gbCreateBufferObject(void);
+void gbReleaseBufferObject(GLuint bufferObjectId);
+void gbUpdateBufferObject(GLenum target,
+                          GLuint bufferObjectId,
+                          GLsizeiptr size,
+                          const void *ptr,
+                          GLenum usage);
+
+/* ========================================================================= */
+
+GLuint gbCompileVertexShader(const char *const vertexShaderSrc);
+GLuint gbCompileFragmentShader(const char *const fragmentShaderSrc);
+
+/* ========================================================================= */
+
+GLuint gbCreateShaderProgram(GLuint vertexShaderId, GLuint fragmentShaderId);
+void gbReleaseShaderProgram(GLuint shaderProgramId);
+void gbBindShaderProgram(GLuint shaderProgramId);
+void gbUnbindShaderProgram(void);
+
+// clang-format off
+
+#define gbSetUniform(shaderProgramId, uniformLocation, uniformType, ...)  \
+    do {                                                                  \
+        gbBindShaderProgram((shaderProgramId));                           \
+                                                                          \
+        glUniform ## uniformType((uniformLocation), __VA_ARGS__);         \
+    } while(0);
+
+// clang-format on
+
+/* ========================================================================= */
+
+void gbSetViewport(GLFWwindow *glfwWindow, int width, int height);
+
+/* ========================================================================= */
+
+double gbGetDeltaTime(void);
+void gbUpdateDeltaTime(void);
 
 /* ========================================================================= */
 
@@ -68,4 +105,4 @@ void UpdateDeltaTime(void);
 }
 #endif
 
-#endif // `GL_LAB_H`
+#endif  // `GL_LAB_H`

@@ -69,15 +69,14 @@ static const unsigned int indices2[] = {
 
 /* Private Variables ======================================================= */
 
-static GLFWmonitor *glfwMonitor;
-static GLFWwindow *glfwWindow;
+static GLFWwindow *window;
 
-static unsigned int vertexShader, fragmentShader1, fragmentShader2,
+static GLuint vertexShader, fragmentShader1, fragmentShader2,
     shaderProgram1, shaderProgram2;
 
-static unsigned int vao1, vao2, vbo1, vbo2, ebo1, ebo2;
+static GLuint vao1, vao2, vbo1, vbo2, ebo1, ebo2;
 
-static int myColor1Location, myColor2Location;
+static GLint myColor1Location, myColor2Location;
 
 /* Private Function Prototypes ============================================= */
 
@@ -93,7 +92,7 @@ static void HandleMouseEvents(void);
 int main(void) {
     InitExample();
 
-    while (!glfwWindowShouldClose(glfwWindow))
+    while (!glfwWindowShouldClose(window))
         UpdateExample();
 
     DeinitExample();
@@ -104,51 +103,16 @@ int main(void) {
 /* Private Functions ======================================================= */
 
 static void InitExample(void) {
-    if (!glfwInit()) GLAB_PANIC("failed to initialize GLFW");
+    window = gbCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, __FILE__);
 
     {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        vertexShader = gbCompileVertexShader(vertexShaderSrc);
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        fragmentShader1 = gbCompileFragmentShader(fragmentShaderSrc1);
+        fragmentShader2 = gbCompileFragmentShader(fragmentShaderSrc2);
 
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    }
-
-    glfwMonitor = glfwGetPrimaryMonitor();
-
-    glfwWindow = glfwCreateWindow(SCREEN_WIDTH,
-                                  SCREEN_HEIGHT,
-                                  __FILE__,
-                                  NULL,
-                                  NULL);
-
-    if (glfwWindow == NULL) GLAB_PANIC("failed to create window with GLFW");
-
-    glfwMakeContextCurrent(glfwWindow);
-
-    if (!gladLoadGLES2Loader((GLADloadproc) glfwGetProcAddress))
-        GLAB_PANIC("failed to initialize GLAD");
-
-    glfwSetFramebufferSizeCallback(glfwWindow, SetViewport);
-
-    const GLFWvidmode *videoMode = glfwGetVideoMode(glfwMonitor);
-
-    int windowX = (videoMode->width - SCREEN_WIDTH) / 2;
-    int windowY = (videoMode->height - SCREEN_HEIGHT) / 2;
-
-    glfwSetWindowPos(glfwWindow, windowX, windowY);
-
-    glfwShowWindow(glfwWindow);
-
-    {
-        vertexShader = CompileVertexShader(vertexShaderSrc);
-
-        fragmentShader1 = CompileFragmentShader(fragmentShaderSrc1);
-        fragmentShader2 = CompileFragmentShader(fragmentShaderSrc2);
-
-        shaderProgram1 = LinkShaderProgram(vertexShader, fragmentShader1);
-        shaderProgram2 = LinkShaderProgram(vertexShader, fragmentShader2);
+        shaderProgram1 = gbCreateShaderProgram(vertexShader, fragmentShader1);
+        shaderProgram2 = gbCreateShaderProgram(vertexShader, fragmentShader2);
     }
 
     {
@@ -203,12 +167,14 @@ static void InitExample(void) {
             glUseProgram(shaderProgram1);
 
             myColor1Location = glGetUniformLocation(shaderProgram1, "myColor1");
-            glUniform4f(myColor1Location, GLAB_TO_RGB01(224.0f, 240.0f, 217.0f, 255.0f));
+            glUniform4f(myColor1Location,
+                        GB_TO_RGB01(224.0f, 240.0f, 217.0f, 255.0f));
 
             glUseProgram(shaderProgram2);
 
             myColor2Location = glGetUniformLocation(shaderProgram2, "myColor2");
-            glUniform4f(myColor2Location, GLAB_TO_RGB01(184.0f, 216.0f, 190.0f, 255.0f));
+            glUniform4f(myColor2Location,
+                        GB_TO_RGB01(184.0f, 216.0f, 190.0f, 255.0f));
         }
 
         {
@@ -255,12 +221,12 @@ static void InitExample(void) {
 }
 
 static void UpdateExample(void) {
-    HandleKeyEvents(), HandleMouseEvents(), UpdateDeltaTime();
+    HandleKeyEvents(), HandleMouseEvents();
 
     {
         /* ======================= [실습 코드] ======================= */
 
-        glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
+        glClearColor(GB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -285,23 +251,24 @@ static void UpdateExample(void) {
         /* ======================= [실습 코드] ======================= */
     }
 
-    glfwSwapBuffers(glfwWindow), glfwPollEvents();
+    glfwSwapBuffers(window), glfwPollEvents();
 }
 
 static void DeinitExample(void) {
     {
         /* ======================= [실습 코드] ======================= */
 
-        glDeleteBuffers(1, &vbo1), glDeleteBuffers(1, &vbo2);
-
         glDeleteVertexArrays(1, &vao1), glDeleteVertexArrays(1, &vao2);
+
+        glDeleteBuffers(1, &vbo1), glDeleteBuffers(1, &vbo2);
+        glDeleteBuffers(1, &ebo1), glDeleteBuffers(1, &ebo2);
 
         glDeleteShader(shaderProgram1), glDeleteShader(shaderProgram2);
 
         /* ======================= [실습 코드] ======================= */
     }
 
-    glfwTerminate();
+    gbReleaseWindow(window);
 }
 
 /* ========================================================================= */

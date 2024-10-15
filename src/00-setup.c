@@ -33,8 +33,7 @@ static const char *fragmentShaderSrc =
 
 /* Private Variables ======================================================= */
 
-static GLFWmonitor *glfwMonitor;
-static GLFWwindow *glfwWindow;
+static GLFWwindow *window;
 
 static GLuint vertexShader, fragmentShader, shaderProgram;
 
@@ -52,7 +51,7 @@ static void HandleMouseEvents(void);
 int main(void) {
     InitExample();
 
-    while (!glfwWindowShouldClose(glfwWindow))
+    while (!glfwWindowShouldClose(window))
         UpdateExample();
 
     DeinitExample();
@@ -63,49 +62,13 @@ int main(void) {
 /* Private Functions ======================================================= */
 
 static void InitExample(void) {
-    if (!glfwInit()) GLAB_PANIC("failed to initialize GLFW");
+    window = gbCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, __FILE__);
 
     {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        vertexShader = gbCompileVertexShader(vertexShaderSrc);
+        fragmentShader = gbCompileFragmentShader(fragmentShaderSrc);
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    }
-
-    glfwMonitor = glfwGetPrimaryMonitor();
-
-    glfwWindow = glfwCreateWindow(SCREEN_WIDTH,
-                              SCREEN_HEIGHT,
-                              __FILE__,
-                              NULL,
-                              NULL);
-
-    if (glfwWindow == NULL) 
-        GLAB_PANIC("failed to create window with GLFW");
-
-    glfwMakeContextCurrent(glfwWindow);
-
-    if (!gladLoadGLES2Loader((GLADloadproc) glfwGetProcAddress))
-        GLAB_PANIC("failed to initialize GLAD");
-
-    glfwSetFramebufferSizeCallback(glfwWindow, SetViewport);
-
-    const GLFWvidmode* videoMode = glfwGetVideoMode(glfwMonitor);
-
-    int windowX = (videoMode->width - SCREEN_WIDTH) / 2;
-    int windowY = (videoMode->height - SCREEN_HEIGHT) / 2;
-
-    glfwSetWindowPos(glfwWindow, windowX, windowY);
-
-    glfwShowWindow(glfwWindow);
-
-    {
-        vertexShader = CompileVertexShader(vertexShaderSrc);
-        fragmentShader = CompileFragmentShader(fragmentShaderSrc);
-
-        shaderProgram = LinkShaderProgram(vertexShader, fragmentShader);
+        shaderProgram = gbCreateShaderProgram(vertexShader, fragmentShader);
     }
 
     {
@@ -123,14 +86,14 @@ static void UpdateExample(void) {
     {
         /* ======================= [실습 코드] ======================= */
 
-        glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
+        glClearColor(GB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
         glClear(GL_COLOR_BUFFER_BIT);
 
         /* ======================= [실습 코드] ======================= */
     }
 
-    glfwSwapBuffers(glfwWindow), glfwPollEvents();
+    glfwSwapBuffers(window), glfwPollEvents();
 }
 
 static void DeinitExample(void) {
@@ -144,7 +107,7 @@ static void DeinitExample(void) {
         /* ======================= [실습 코드] ======================= */
     }
 
-    glfwTerminate();
+    gbReleaseWindow(window);
 }
 
 /* ========================================================================= */

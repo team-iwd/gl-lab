@@ -57,8 +57,7 @@ static const unsigned int indices[] = {
 
 /* Private Variables ======================================================= */
 
-static GLFWmonitor *glfwMonitor;
-static GLFWwindow *glfwWindow;
+static GLFWwindow *window;
 
 static float myPosition[3] = {
     0.0f,  // `x`
@@ -86,7 +85,7 @@ static void HandleMouseEvents(void);
 int main(void) {
     InitExample();
 
-    while (!glfwWindowShouldClose(glfwWindow))
+    while (!glfwWindowShouldClose(window))
         UpdateExample();
 
     DeinitExample();
@@ -97,48 +96,13 @@ int main(void) {
 /* Private Functions ======================================================= */
 
 static void InitExample(void) {
-    if (!glfwInit()) GLAB_PANIC("failed to initialize GLFW");
+    window = gbCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, __FILE__);
 
     {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+        vertexShader = gbCompileVertexShader(vertexShaderSrc);
+        fragmentShader = gbCompileFragmentShader(fragmentShaderSrc);
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    }
-
-    glfwMonitor = glfwGetPrimaryMonitor();
-
-    glfwWindow = glfwCreateWindow(SCREEN_WIDTH,
-                                  SCREEN_HEIGHT,
-                                  __FILE__,
-                                  NULL,
-                                  NULL);
-
-    if (glfwWindow == NULL) GLAB_PANIC("failed to create window with GLFW");
-
-    glfwMakeContextCurrent(glfwWindow);
-
-    if (!gladLoadGLES2Loader((GLADloadproc) glfwGetProcAddress))
-        GLAB_PANIC("failed to initialize GLAD");
-
-    glfwSetFramebufferSizeCallback(glfwWindow, SetViewport);
-
-    const GLFWvidmode *videoMode = glfwGetVideoMode(glfwMonitor);
-
-    int windowX = (videoMode->width - SCREEN_WIDTH) / 2;
-    int windowY = (videoMode->height - SCREEN_HEIGHT) / 2;
-
-    glfwSetWindowPos(glfwWindow, windowX, windowY);
-
-    glfwShowWindow(glfwWindow);
-
-    {
-        vertexShader = CompileVertexShader(vertexShaderSrc);
-        fragmentShader = CompileFragmentShader(fragmentShaderSrc);
-
-        shaderProgram = LinkShaderProgram(vertexShader, fragmentShader);
+        shaderProgram = gbCreateShaderProgram(vertexShader, fragmentShader);
     }
 
     {
@@ -187,17 +151,17 @@ static void InitExample(void) {
 }
 
 static void UpdateExample(void) {
-    HandleKeyEvents(), HandleMouseEvents(), UpdateDeltaTime();
+    HandleKeyEvents(), HandleMouseEvents(), gbUpdateDeltaTime();
 
     {
         /* ======================= [실습 코드] ======================= */
 
-        glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
+        glClearColor(GB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
         glClear(GL_COLOR_BUFFER_BIT);
 
         {
-            float colorValue = fabs(sin(glfwGetTime()));
+            float colorValue = (float) fabs(sin(glfwGetTime()));
 
             glUniform4f(myColorLocation, colorValue, colorValue, 1.0f, 1.0f);
         }
@@ -207,23 +171,23 @@ static void UpdateExample(void) {
         /* ======================= [실습 코드] ======================= */
     }
 
-    glfwSwapBuffers(glfwWindow), glfwPollEvents();
+    glfwSwapBuffers(window), glfwPollEvents();
 }
 
 static void DeinitExample(void) {
     {
         /* ======================= [실습 코드] ======================= */
 
-        glDeleteBuffers(1, &vbo), glDeleteBuffers(1, &ebo);
-
         glDeleteVertexArrays(1, &vao);
+
+        glDeleteBuffers(1, &vbo), glDeleteBuffers(1, &ebo);
 
         glDeleteProgram(shaderProgram);
 
         /* ======================= [실습 코드] ======================= */
     }
 
-    glfwTerminate();
+    gbReleaseWindow(window);
 }
 
 /* ========================================================================= */
@@ -231,11 +195,11 @@ static void DeinitExample(void) {
 static void HandleKeyEvents(void) {
     bool keyPressed = false;
 
-    float movementSpeed = 0.1f * GetDeltaTime();
+    float movementSpeed = 0.1f * gbGetDeltaTime();
 
-    if (glfwGetKey(glfwWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
         keyPressed = !keyPressed, myPosition[0] -= movementSpeed;
-    else if (glfwGetKey(glfwWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
         keyPressed = !keyPressed, myPosition[0] += movementSpeed;
 
     // 키보드 방향키 입력에 따라 삼각형의 위치를 변경한다.

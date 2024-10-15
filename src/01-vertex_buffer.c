@@ -66,52 +66,17 @@ int main(void) {
 /* Private Functions ======================================================= */
 
 static void InitExample(void) {
-    if (!glfwInit()) GLAB_PANIC("failed to initialize GLFW");
-
-    {
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    }
-
-    glfwMonitor = glfwGetPrimaryMonitor();
-
-    glfwWindow = glfwCreateWindow(SCREEN_WIDTH,
-                              SCREEN_HEIGHT,
-                              __FILE__,
-                              NULL,
-                              NULL);
-
-    if (glfwWindow == NULL) GLAB_PANIC("failed to create window with GLFW");
-
-    glfwMakeContextCurrent(glfwWindow);
-
-    if (!gladLoadGLES2Loader((GLADloadproc) glfwGetProcAddress))
-        GLAB_PANIC("failed to initialize GLAD");
-
-    glfwSetFramebufferSizeCallback(glfwWindow, SetViewport);
-
-    const GLFWvidmode* videoMode = glfwGetVideoMode(glfwMonitor);
-
-    int windowX = (videoMode->width - SCREEN_WIDTH) / 2;
-    int windowY = (videoMode->height - SCREEN_HEIGHT) / 2;
-
-    glfwSetWindowPos(glfwWindow, windowX, windowY);
-
-    glfwShowWindow(glfwWindow);
+    glfwWindow = gbCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, __FILE__);
 
     {
         // 정점 셰이더를 컴파일한다.
-        vertexShader = CompileVertexShader(vertexShaderSrc);
+        vertexShader = gbCompileVertexShader(vertexShaderSrc);
 
         // 프래그먼트 셰이더를 컴파일한다.
-        fragmentShader = CompileFragmentShader(fragmentShaderSrc);
+        fragmentShader = gbCompileFragmentShader(fragmentShaderSrc);
 
         // 셰이더 프로그램을 빌드한다.
-        shaderProgram = LinkShaderProgram(vertexShader, fragmentShader);
+        shaderProgram = gbCreateShaderProgram(vertexShader, fragmentShader);
     }
 
     {
@@ -191,7 +156,7 @@ static void UpdateExample(void) {
         */
 
         // 프레임버퍼 초기화에 사용될 색상을 설정한다.
-        glClearColor(GLAB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
+        glClearColor(GB_TO_RGB01(202.0f, 235.0f, 202.0f, 255.0f));
 
         // 프레임 버퍼를 초기화한다.
         glClear(GL_COLOR_BUFFER_BIT);
