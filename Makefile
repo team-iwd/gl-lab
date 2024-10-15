@@ -11,9 +11,8 @@ _COLOR_END = \033[m
 # =============================================================================
 
 PROJECT_NAME = gl-lab
-PROJECT_FULL_NAME = team-iwd/gl-lab
 
-LOG_PREFIX = ${_COLOR_BEGIN}${PROJECT_FULL_NAME}:${_COLOR_END}
+LOG_PREFIX = ${_COLOR_BEGIN} ~>${_COLOR_END}
 
 # =============================================================================
 
@@ -30,12 +29,13 @@ TARGETS = \
 	${SOURCE_PATH}/04-shader_uniform_pt1.${TARGET_SUFFIX}        \
 	${SOURCE_PATH}/05-shader_uniform_pt2.${TARGET_SUFFIX}        \
 	${SOURCE_PATH}/06-drawing_multiple_objects.${TARGET_SUFFIX}  \
+	${SOURCE_PATH}/07-abstractions.${TARGET_SUFFIX}              \
 
 # =============================================================================
 
-CC = cc
+CC = gcc
 CFLAGS = -D_DEFAULT_SOURCE -g -I${INCLUDE_PATH} -O2 -std=gnu99
-LDLIBS = -ldl -lGL -lglfw -lm -lpthread -lrt -lX11
+LDLIBS = -ldl -lGLESv2 -lglfw -lm -lpthread -lrt -lX11
 
 # =============================================================================
 

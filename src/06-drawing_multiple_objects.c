@@ -14,7 +14,7 @@
 /* Constants =============================================================== */
 
 static const char *vertexShaderSrc =
-    "#version 320 es\n"
+    "#version 300 es\n"
     "\n"
     "layout (location = 0) in vec3 aPosition;\n"
     "\n"
@@ -23,7 +23,9 @@ static const char *vertexShaderSrc =
     "}\0";
 
 static const char *fragmentShaderSrc1 =
-    "#version 320 es\n"
+    "#version 300 es\n"
+    "\n"
+    "precision highp float;"
     "\n"
     "out vec4 fragColor;\n"
     "\n"
@@ -34,7 +36,9 @@ static const char *fragmentShaderSrc1 =
     "}\0";
 
 static const char *fragmentShaderSrc2 =
-    "#version 320 es\n"
+    "#version 300 es\n"
+    "\n"
+    "precision highp float;"
     "\n"
     "out vec4 fragColor;\n"
     "\n"
@@ -106,7 +110,7 @@ static void InitExample(void) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     }

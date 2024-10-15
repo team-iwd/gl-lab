@@ -14,7 +14,7 @@
 /* Constants =============================================================== */
 
 static const char *vertexShaderSrc =
-    "#version 320 es\n"
+    "#version 300 es\n"
     "\n"
     "layout (location = 0) in vec3 aPosition;\n"
     "\n"
@@ -27,15 +27,18 @@ static const char *vertexShaderSrc =
     "        1.0f); \n"
     "}\0";
 
-static const char *fragmentShaderSrc = "#version 320 es\n"
-                                          "\n"
-                                          "out vec4 fragColor;\n"
-                                          "\n"
-                                          "uniform vec4 myColor;\n"
-                                          "\n"
-                                          "void main() {\n"
-                                          "    fragColor = myColor;\n"
-                                          "}\0";
+static const char *fragmentShaderSrc = 
+    "#version 300 es\n"
+    "\n"
+    "precision highp float;"
+    "\n"
+    "out vec4 fragColor;\n"
+    "\n"
+    "uniform vec4 myColor;\n"
+    "\n"
+    "void main() {\n"
+    "    fragColor = myColor;\n"
+    "}\0";
 
 // clang-format off
 
@@ -63,12 +66,11 @@ static float myPosition[3] = {
     0.0f   // `z`
 };
 
-static unsigned int vertexShader, fragmentShader, shaderProgram;
-static unsigned int vao, vbo, ebo;
+static GLuint vertexShader, fragmentShader, shaderProgram;
 
-static int myPositionLocation, myColorLocation;
+static GLuint vao, vbo, ebo;
 
-static bool initialized;
+static GLint myPositionLocation, myColorLocation;
 
 /* Private Function Prototypes ============================================= */
 
@@ -101,7 +103,7 @@ static void InitExample(void) {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     }
