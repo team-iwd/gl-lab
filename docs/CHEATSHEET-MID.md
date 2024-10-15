@@ -133,7 +133,7 @@ $$
 
 **변환 행렬**
 - 컴퓨터 그래픽스에서 3차원 벡터를 표현할 때는 $\overrightarrow{v} = \begin{bmatrix}x \\ y \\ z\end{bmatrix}$ 형태의 $3 \times 1$ 행렬이 아닌 $\overrightarrow{v} = \begin{bmatrix}x \\ y \\ z \\ w\end{bmatrix}$ 형태의 $4 \times 1$ 행렬을 이용하는데, 이렇게 $N$차원 공간에서의 좌표를 $(N + 1) \times 1$의 성분으로 표현하는 좌표계를 동차 좌표계 (homogeneous coordinates)라고 함
-- ==**동차 좌표계를 사용하는 이유는 원래 두 벡터의 합으로 나타내야 하는 이동 (translation) 연산을 크기 조절 (scale)과 회전 (rotation)처럼 행렬의 곱으로 나타내기 위해서임**==
+- ==**동차 좌표계를 사용하는 이유는 원래 두 벡터의 합으로 나타내야 하는 이동 (translation) 연산을 크기 변환 (scale)과 회전 (rotation)처럼 행렬의 곱으로 나타내기 위해서임**==
 
 **선형 보간법**
 - 시작 점 $C_0$과 끝 점 $C_1$을 잇는 선분에서 $C_0$과 $C_1$에 각각 특정한 값 $c_0$, $c_1$이 주어졌을 때, $C_0$과 $C_1$ 사이의 임의의 점에 대응되는 값을 비례식을 통해 찾는 알고리즘
@@ -269,7 +269,7 @@ void main() {
 **GLSL의 벡터 자료형**
 - 벡터는 `vec2`, `bvec3`, `ivec4`, `uvec3`, `dvec2`와 같이 2 - 4개의 요소를 정의할 때 사용하며, `b`는 `bool`, `i`는 `int`, `u`는 `unsigned int` (`uint`), `d`는 `double`을 뜻함
 - 벡터의 `x`, `y,` `z`, `w` 성분에 접근할 때는 `v.x`, `v.y`, `v.z`, `v.w`를 이용함
-- **스위즐링 (swizzling):** 어떤 벡터를 다른 자료형의 벡터로 변환하고자 할 때는 다음과 같이 벡터의 성분을 "뒤섞어서 (swizzle)" 정의할 수 있음
+- **스위즐링 (swizzling):** 벡터의 성분을 "뒤섞어서 (swizzle)" 또다른 벡터를 정의하는 것을 스위즐링이라고 하며, GLSL에 존재하는 고유 기능임
 ```c
 vec2 myVec2 = vec2(1.0f, 0.5f);
 
@@ -307,20 +307,7 @@ TODO: ...
 
 ### 이론 정리
 
-```mermaid
-flowchart LR
-    A[Object Space] --(world trans.)--> B[World Space]
-    B --(view trans.)--> C:::hidden
-
-    classDef hidden display: none;
-```
-```mermaid
-flowchart LR
-    A[Camera Space] --(projection trans.)--> B[Clip Space]
-    B --> C[Viewport]
-```
-
-**2차원 공간에서의 크기 조절 행렬**
+**크기 변환 행렬 (2차원)**
 $$
 \begin{bmatrix}
 s_x & 0 \\
@@ -336,9 +323,30 @@ s_x \cdot x \\
 x_y \cdot y
 \end{bmatrix}
 $$
-- 크기 조절 행렬 (scaling matrix)은 다각형을 구성하는 각 좌표의 $x$성분과 $y$성분에 각각 $s_x$와 $s_y$를 곱함
+- 크기 변환 행렬 (scaling matrix)은 다각형을 구성하는 각 좌표의 $x$성분과 $y$성분에 각각 $s_x$와 $s_y$를 곱해서 다각형의 크기를 변경함
+- 크기 변환 연산에서 $s_x = s_y$인 경우를 균등 크기 변환 (uniform scaling), $s_x \ne s_y$인 경우를 비균등 크기 변환 (non-uniform scaling)이라고 함
 
-**2차원 공간에서의 회전 행렬**
+**크기 변환 행렬 (3차원)**
+$$
+\begin{bmatrix}
+s_x & 0 & 0 \\
+0 & s_y & 0 \\
+0 & 0 & s_z
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y \\
+z
+\end{bmatrix}
+=
+\begin{bmatrix}
+s_x \cdot x \\
+s_y \cdot y \\
+s_z \cdot z
+\end{bmatrix}
+$$
+
+**회전 행렬 (2차원)**
 $$
 \begin{bmatrix}
 cos \theta & -sin \theta \\
@@ -363,7 +371,33 @@ $$
 - $x = rcos\phi, y = rsin\phi$, 즉 $(x, y)$가 중심이 원점이고 반지름이 $r$인 원 위에 있는 경우 $x^\prime = rcos(\phi + \theta)$, $y^\prime = rsin(\phi + \theta)$가 되고, 삼각 함수의 덧셈 법칙으로 전개하면 회전 행렬 (rotation matrix) $R(\theta)$를 구할 수 있음
 - $R(\theta)$는 ==**벡터를 원점 기준으로 반시계 방향으로 회전**==시키는데, $\theta$가 음수일 경우 $R(\theta)$는 벡터를 원점 기준으로 시계 방향으로 회전시킴
 
-**2차원 공간에서의 이동 행렬**
+**회전 행렬 (3차원)**
+$$
+R_x(\theta) = \begin{bmatrix}
+1 & 0 & 0 \\
+0 & cos \theta & -sin \theta \\
+0 & sin \theta & cos \theta
+\end{bmatrix}
+$$
+
+$$
+R_y(\theta) = \begin{bmatrix}
+cos \theta & 0 & sin \theta \\
+0 & 1 & 0 \\
+-sin \theta & 0 & cos \theta
+\end{bmatrix}
+$$
+
+$$
+R_z(\theta) = \begin{bmatrix}
+cos \theta & -sin \theta & 0 \\
+sin \theta & cos \theta & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+- 2차원에서의 회전 연산은 원점을 기준으로 점을 회전시키지만, ==**3차원에서의 회전 연산은 축 (axis)을 기준으로 점을 회전시킴**==
+
+**이동 행렬 (2차원)**
 $$
 \begin{bmatrix}
 x \\
@@ -378,7 +412,7 @@ x + d_x \\
 y + d_y
 \end{bmatrix}
 $$
-- ==**이동 (translation)은 크기 조절이나 회전과 달리, 행렬의 곱으로 표현할 수 없음**== $\rightarrow$ 동차 좌표계 (homogeneous coordinates) 이용!
+- ==**이동 (translation)은 크기 변환이나 회전과 달리, 행렬의 곱으로 표현할 수 없음**== $\rightarrow$ 동차 좌표계 (homogeneous coordinates) 이용!
 
 **동차 좌표계**
 $$
@@ -403,42 +437,118 @@ $$
 - ==**동차 좌표계를 이용하면 좌표의 이동을 행렬의 곱으로 표현 가능**==
 - 동차 좌표 $(wx, wy, w)$에서 원래 좌표를 구할 때는 마지막 성분이 1이 되도록 모든 성분을 $w$로 나누면 됨 $\rightarrow$ $(\frac{x}{w}, \frac{y}{w}, 1)$
 
+**이동 행렬 (3차원)**
+$$
+\begin{bmatrix}
+1 & 0 & 0 & d_x \\
+0 & 1 & 0 & d_y \\
+0 & 0 & 1 & d_z \\
+0 & 0 & 0 & 1
+\end{bmatrix} 
+\begin{bmatrix}
+x \\
+y \\
+z \\
+w
+\end{bmatrix} =
+\begin{bmatrix}
+x + d_x \\
+y + d_y \\
+z + d_z \\
+w
+\end{bmatrix}
+$$
+- 2차원에서의 이동 연산과 마찬가지로, 동차 좌표계를 이용해 좌표의 이동을 행렬의 곱으로 표현
+
 **변환 행렬**
-- 앞에서 정리한 크기 조절, 이동 및 회전 연산을 변환 (transformation)이라고 함
+- 앞에서 정리한 크기 변환, 이동 및 회전 연산을 변환 (transformation)이라고 함
 - 변환은 행렬 곱으로 표현되므로 교환 법칙이 성립하지 않음
 - 원점이 아닌 다른 점 $(a, b$)를 기준으로 회전 연산을 하려는 경우
     1. 점 $(x, y)$를 $(-a, -b)$만큼 이동시키고...
     2. $(x - a, y - b)$를 원점을 기준으로 회전시킨 다음...
     3. 그 점을 $(a, b)$만큼 다시 이동시키면 됨!
 
-**아핀 변환**
+**아핀 변환 (2차원)**
 $$
-S_h =
+S' =
 \begin{bmatrix}
 s_x & 0 & 0 \\
 0 & s_y & 0 \\
 0 & 0 & 1
 \end{bmatrix}
-, \ R_h(\theta) =
+, \ R'(\theta) =
 \begin{bmatrix}
 cos \theta & -sin \theta & 0 \\
 sin \theta & cos \theta & 0 \\
 0 & 0 & 1
 \end{bmatrix}, \
-T_h =
+T' =
 \begin{bmatrix}
 1 & 0 & d_x \\
 0 & 1 & d_y \\
 0 & 0 & 1
 \end{bmatrix}
 $$
-- 아핀 변환 (affine transform)은 크기 조절, 회전, 반사 (reflection) 등의 선형 변환 (linear transform) 연산, 그리고 이동 연산을 가리킴
+- 아핀 변환 (affine transform)은 크기 변환, 회전, 반사 (reflection) 등의 선형 변환 (linear transform) 연산, 그리고 이동 연산을 가리킴
 - 아핀 변환 행렬은 몇 개가 주어지든 항상 하나의 행렬로 결합할 수 있으며, ==**아핀 변환 행렬의 마지막 행은 반드시 $\begin{bmatrix} 0 & 0 & 1\end{bmatrix}$의 형태를 가짐**==
-- 마지막 행을 제외한 $2 \times 3$ 행렬은 왼쪽 $2 \times 2$ 행렬 ($L$)과 오른쪽 $2 \times 1$ 열 벡터 ($t$)를 합친 $\begin{bmatrix} L \ | \ t\end{bmatrix}$ 형태로 볼 수 있으며, 이때 $L$에는 크기 조절과 회전 연산만이 포함되고 열 벡터 $t$는 이동 연산까지 포함됨
-- 어떤 점 $p$에 아핀 변환을 적용할 때는 먼저 $L$을 적용, 즉 크기 조절과 회전을 먼저 하고 그 다음에 $t$를 적용하여 최종 위치 $Lp + t$를 구할 수 있음
+- 마지막 행을 제외한 $2 \times 3$ 행렬은 왼쪽 $2 \times 2$ 행렬 ($L$)과 오른쪽 $2 \times 1$ 열 벡터 ($t$)를 합친 $\begin{bmatrix} L \ | \ t\end{bmatrix}$ 형태로 볼 수 있으며, 이때 $L$에는 크기 변환과 회전 연산만이 포함되고 열 벡터 $t$는 이동 연산까지 포함됨
+- 어떤 점 $p$에 아핀 변환을 적용할 때는 먼저 $L$을 적용, 즉 크기 변환과 회전을 먼저 하고 그 다음에 $t$를 적용하여 최종 위치 $Lp + t$를 구할 수 있음
+
+**아핀 변환 (3차원)**
+$$
+S' =
+\begin{bmatrix}
+s_x & 0 & 0 & 0 \\
+0 & s_y & 0 & 0 \\
+0 & 0 & s_z & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+, \ {R_x}'(\theta) =
+\begin{bmatrix}
+cos \theta & -sin \theta & 0 & 0 \\
+sin \theta & cos \theta & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}, \
+T' =
+\begin{bmatrix}
+1 & 0 & 0 & d_x \\
+0 & 1 & 0 & d_y \\
+0 & 0 & 1 & d_z \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$
+- 2차원에서의 아핀 변환 행렬과 유사하게, ==**아핀 변환 행렬의 마지막 행은 반드시 $\begin{bmatrix} 0 & 0 & 1\end{bmatrix}$의 형태를 가짐**==
+- 마지막 행을 제외한 $3 \times 4$ 행렬은 왼쪽 $3 \times 3$ 행렬 ($L$)과 오른쪽 $3 \times 1$ 열 벡터 ($t$)를 합친 $\begin{bmatrix} L \ | \ t\end{bmatrix}$ 형태로 볼 수 있으며, 이때 $L$에는 크기 변환과 회전 연산만이 포함되고 열 벡터 $t$는 이동 연산까지 포함됨
 
 **강체 운동**
 - 변환 행렬에 오직 회전과 이동 연산만이 포함된 경우 물체의 회전 각도와 위치만 변하고 물체의 모양은 변경하지 않으므로, 이러한 행렬을 강체 운동 (rigid-body motion) 행렬이라고도 함
+
+**크기 및 이동 변환 행렬의 역행렬**
+$$
+S^{-1} =
+\begin{bmatrix}
+\frac{1}{s_x} & 0 & 0 & 0 \\
+0 & \frac{1}{s_y} & 0 & 0 \\
+0 & 0 & \frac{1}{s_z} & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix},
+T^{-1} =
+\begin{bmatrix}
+1 & 0 & 0 & -d_x \\
+0 & 1 & 0 & -d_y \\
+0 & 0 & 1 & -d_z \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$
+- (당연한 얘기지만) 변환 행렬의 역행렬을 물체에 적용하면 그 물체의 크기, 회전 각도와 위치가 원래대로 되돌아가게 됨 ($SS^{-1} = S^{-1}S = I$, $TT^{-1} = T^{-1}T = I$)
+
+**회전 행렬의 역행렬**
+$$
+R^{-1} = R^T
+$$
+- $3 \times 3$ 회전 행렬의 열을 각각 $u, v, n$이라고 하면, $u \cdot u = v \cdot v = n \cdot n = 1$이고 $u \cdot v = v \cdot n = n \cdot u = 0$임을 알 수 있는데, 이것은 $u$, $v$, $n$이 각각 물체 공간 (object space, local space)의 $x$축, $y$축과 $z$축을 나타내는 단위 벡터임을 뜻함
+- ==**회전 행렬을 통해 물체 공간의 세 축을 구할 수 있으며, 물체 공간의 세 축을 통해 회전 행렬을 구할 수 있음**==
 
 ### 연습 문제
 
@@ -449,6 +559,25 @@ TODO: ...
 ## Vertex Processing
 
 ### 이론 정리
+
+**정점 셰이더**
+```mermaid
+flowchart LR
+    A[Object Space] --(world trans.)--> B[World Space]
+    B --(view trans.)--> C:::hidden
+
+    classDef hidden display: none;
+```
+```mermaid
+flowchart LR
+    A[Camera Space] --(projection trans.)--> B[Clip Space]
+    B --> C[Viewport]
+```
+- 정점 셰이더에서 가장 중요한 작업은 VAO로부터 정점을 하나씩 입력받고, ==**각 정점에 변환 행렬을 적용하여 정점의 좌표가 NDC 내에 있도록 만드는 것임**==
+
+**물체 공간**
+- 중심이 원점이고 회전 축이 물체와 완전히 고정된 공간
+- 내가 게임 캐릭터라고 가정하면, 내가 어디에 서 있고 내 몸이 어느 방향을 향하는지에 관계없이 항상 내 몸의 중심은 $(x = 0, y = 0, z = 0)$이고 회전 축도 전부 다 나를 기준으로 $x$축, $y$축, $z$축이 결정되는 공간
 
 ### 연습 문제
 
