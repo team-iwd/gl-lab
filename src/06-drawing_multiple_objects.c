@@ -185,8 +185,8 @@ static void InitExample(void) {
                 // VAO의 (진짜는 아닌) 대략적인 형태를 C 구조체로 표현한 것
                 typedef struct VAO_ {
                     struct {
-                        Vector3 *position;  // VBO에 저장된 정점 좌표의 
-                                            // 메모리 주소
+                        Vector3 *position;  // VBO에 저장된 정점 좌표의 메모리 주소
+                        Vector3 *normal;    // VBO에 저장된 정점 법선 벡터의 메모리 주소
                         // ...
                     } *attributes;          // 정점 속성 배열
                     GLuint *ebo;            // EBO 배열

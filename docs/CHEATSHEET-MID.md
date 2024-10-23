@@ -4,8 +4,6 @@
 
 ## Mathematics: Basics
 
-### 이론 정리
-
 **벡터**
 $$
 \overrightarrow{v} = \begin{bmatrix}
@@ -139,15 +137,9 @@ $$
 - 시작 점 $C_0$과 끝 점 $C_1$을 잇는 선분에서 $C_0$과 $C_1$에 각각 특정한 값 $c_0$, $c_1$이 주어졌을 때, $C_0$과 $C_1$ 사이의 임의의 점에 대응되는 값을 비례식을 통해 찾는 알고리즘
 - 예를 들어, $C_0$과 $C_1$ 사이에 $B$라는 점이 주어지고, $B$와 $C_1$ 사이의 거리가 $C_0$과 $B$ 사이의 거리의 $t$배라면, $B$에 대응되는 값은 $(1 - t)c_0 + tc_1$이 됨 
 
-### 연습 문제
-
-TODO: ...
-
 ---
 
 ## Modeling
-
-### 이론 정리
 
 **렌더링 과정의 이해**
 - 컴퓨터 그래픽스에서 ==**모든 물체는 3차원 공간에 존재**==하지만 (2차원 게임도 사실은 $z = 0$인 3차원 공간임), 게임을 하는 사람의 입장에서는 컴퓨터 모니터를 통해 ==**픽셀 (pixel)로 이루어진 2차원의 평평한 화면만을 볼 수 있음**==
@@ -244,7 +236,7 @@ $$
 - 표면 법선 (surface normal)은 삼각형 메시에서 모델의 바깥쪽을 향하는 법선 벡터를 뜻함
 - 시계 반대 방향 (counter-clockwise, CCW)으로 정렬된 정점 $v_1, v_2, v_3$를 가진 삼각형의 표면 법선은 $v_1$을 지나는 두 변의 벡터 $\overrightarrow{e_1} = \overrightarrow{v_2 - v_1}$, $\overrightarrow{e_2} = \overrightarrow{v_3 - v_1}$의 외적을 통해 구할 수 있음
 
-**정점에 대한 법선**
+**정점 법선**
 - 삼각형 메시 위의 어떤 ==**정점에 대한 법선 (vertex normal)은 그 정점을 가진 모든 삼각형 메시의 표면 벡터의 평균을 뜻함**==
 
 **GLSL**
@@ -297,15 +289,9 @@ uniform vec4 myColor;
 - `uniform` 한정자는 모든 셰이더 프로그램에서 사용되는 "전역 변수" (global variable)을 정의할 때 사용됨
 - `uniform`이 붙은 변수는 ==**셰이더 프로그램이 활성화된 상태일 경우**== `glGetUniformLocation()` 함수를 통해 그래픽 파이프라인 외부에서 직접 값을 지정해줄 수 있음
 
-### 연습 문제
-
-TODO: ...
-
 ---
 
 ## Spaces and Transforms
-
-### 이론 정리
 
 **크기 변환 행렬 (2차원)**
 $$
@@ -545,25 +531,24 @@ $$
 
 **회전 행렬의 역행렬**
 $$
-R^{-1} = R^T
+R^{-1} = R^T =
+\begin{bmatrix}
+u_x & u_y & u_z \\
+v_x & v_y & v_z \\
+n_x & n_y & n_z
+\end{bmatrix}
 $$
 - $3 \times 3$ 회전 행렬의 열을 각각 $u, v, n$이라고 하면, $u \cdot u = v \cdot v = n \cdot n = 1$이고 $u \cdot v = v \cdot n = n \cdot u = 0$임을 알 수 있는데, 이것은 $u$, $v$, $n$이 각각 물체 공간 (object space, local space)의 $x$축, $y$축과 $z$축을 나타내는 단위 벡터임을 뜻함
 - ==**회전 행렬을 통해 물체 공간의 세 축을 구할 수 있으며, 물체 공간의 세 축을 통해 회전 행렬을 구할 수 있음**==
-
-### 연습 문제
-
-TODO: ...
 
 ---
 
 ## Vertex Processing
 
-### 이론 정리
-
 **정점 셰이더**
 ```mermaid
 flowchart LR
-    A[Object Space] --(world trans.)--> B[World Space]
+    A[Local Space] --(world trans.)--> B[World Space]
     B --(view trans.)--> C:::hidden
 
     classDef hidden display: none;
@@ -573,15 +558,183 @@ flowchart LR
     A[Camera Space] --(projection trans.)--> B[Clip Space]
     B --> C[Viewport]
 ```
-- 정점 셰이더에서 가장 중요한 작업은 VAO로부터 정점을 하나씩 입력받고, ==**각 정점에 변환 행렬을 적용하여 정점의 좌표가 NDC 내에 있도록 만드는 것임**==
+- 정점 셰이더에서 가장 중요한 작업은 VAO로부터 정점을 하나씩 입력받고, ==**각 정점에 적절한 행렬 연산을 수행하여 정점의 좌표가 NDC 내에 있도록 만드는 것임**==
 
 **물체 공간**
 - 중심이 원점이고 회전 축이 물체와 완전히 고정된 공간
-- 내가 게임 캐릭터라고 가정하면, 내가 어디에 서 있고 내 몸이 어느 방향을 향하는지에 관계없이 항상 내 몸의 중심은 $(x = 0, y = 0, z = 0)$이고 회전 축도 전부 다 나를 기준으로 $x$축, $y$축, $z$축이 결정되는 공간
+- 내가 게임 캐릭터라면, 내가 어디에 서 있고 내 몸이 어느 방향을 향하는지에 관계없이 항상 내 몸의 중심은 $(x = 0, y = 0, z = 0)$이고 회전 축도 전부 다 나를 기준으로 $x$축, $y$축, $z$축이 결정되는 공간
 
-### 연습 문제
+**세계 공간**
+- 물체 공간에 있는 물체의 각 정점 좌표에 ==**크기 변환, 회전, 이동 등이 포함된 모델 행렬 (model matrix)을 곱하여**== 게임 세계에 물체를 배치
+- 내가 게임 캐릭터라면, 리스폰 장소나 튜토리얼 맵의 시작 위치 등의 게임 세계 원점을 기준으로 나의 중심과 회전 축이 결정되는 공간
 
-TODO: ...
+**정점 법선의 변환**
+- 게임 세계에 물체를 배치할 때는 ==**정점에 대한 법선도 같이 변환해주어야 함**==
+- 법선 벡터는 위치에 상관없이 방향만이 중요하므로 변환 행렬의 $L$만이 법선 벡터에 영향을 주는데, ==**만약 $L$에 비균등 크기 변환이 포함된 경우 법선 벡터가 다각형과 수직을 이루지 않게 됨**== $\rightarrow$ 정점 법선에는 모델 행렬 대신 $(L^{-1})^T$를 곱해줘야 함!
+
+**카메라 공간**
+- 게임 세계 공간에 있는 물체의 각 정점 좌표에 ==**시점 행렬 (view matrix)를 곱하여**== 게임 캐릭터 또는 관찰자 시점을 기준으로 물체를 배치
+
+**시점 변환**
+![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/view_space.png)
+- 물체를 실제 게임처럼 1인칭 또는 3인칭 시점으로 보기 위해서는 물체를 어디에서 바라보고 있는지 ($EYE$), 물체의 어느 곳을 바라보고 있는지 ($AT$)와 물체를 바라보고 있는 곳에서 위쪽이 어느 방향인지 ($UP$)를 정의해주어야 함
+- 그 다음에는 카메라의 위치를 게임 세계의 원점으로 이동시키고, 모든 물체들을 카메라가 이동한 만큼 뒤로 밀어냄
+- 마지막으로, 게임 세계의 모든 물체를 카메라의 위치인 원점을 기준으로 회전시켜, 게임 세계의 회전 축과 카메라의 회전 축이 일치하게 만듦 (기저 변환)
+
+**시점 행렬**
+$$
+M_{view} = 
+\begin{bmatrix}
+u_x & u_y & u_z & 0 \\
+v_x & v_y & v_z & 0 \\
+n_x & n_y & n_z & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix} \
+\begin{bmatrix}
+1 & 0 & 0 & -EYE_x \\
+0 & 1 & 0 & -EYE_y \\
+0 & 0 & 1 & -EYE_z \\
+0 & 0 & 0 & 1
+\end{bmatrix} =
+\begin{bmatrix}
+u_x & u_y & u_z & -EYE_x \\
+v_x & v_y & v_z & -EYE_y \\
+n_x & n_y & n_z & -EYE_z \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$
+- $\overrightarrow{n} = \frac{\overrightarrow{EYE} - \overrightarrow{AT}}{|\overrightarrow{EYE} - \overrightarrow{AT}|}$
+- $\overrightarrow{u} = \frac{\overrightarrow{UP} \times \overrightarrow{n}}{|\overrightarrow{up} \times \overrightarrow{n}|}$
+- $\overrightarrow{v} = \overrightarrow{n} \times \overrightarrow{u}$
+
+**오른손 좌표계와 왼손 좌표계**
+- 오른손 좌표계에서는 $z$축이 오른손 엄지, 즉 게임 화면의 바깥쪽을 향하고, 왼손 좌표계에서는 게임 화면의 안쪽으로 향함
+- 시점 행렬과 물체의 위치가 같더라도 카메라와 물체가 속한 좌표계가 다르면 카메라 공간에서 물체가 좌우 반전되어 보일 수 있음 $\rightarrow$ 카메라와 물체의 $z$축을 반전시키면 됨!
+
+**클립 공간**
+- 카메라 공간에 있는 물체의 각 정점 좌표에 ==**투영 행렬 (projection matrix)를 곱하여**== 모든 정점 좌표를 NDC 좌표로 변환
+
+**시야 각**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/view_frustum.png)](https://docs.tizen.org/application/native/guides/graphics/vertex-shader/)
+- 카메라에 보이는 3차원 공간의 물체들을 2차원의 게임 화면에 그리기 위해서는 카메라와 가까운 물체는 크게 그리고, 카메라와 먼 물체는 작게 그리는 '원근법' (perspective)을 적용해야 함 $\rightarrow$ ==**동차 좌표의 $w$ 요소가 커질수록 물체의 크기는 작아짐!**==
+- 카메라를 정의하기 위해서는 좌표 축 외에도 카메라를 확대 및 축소하기 위한 시야 각 (field-of-view, FOV)과 게임 화면의 종횡비 (aspect ratio)를 정의해야 함
+- 마지막으로, 게임의 성능을 위해서는 카메라와 너무 멀리 떨어진 물체는 그리지 않는 것이 좋으므로 카메라로부터 $z$좌표가 $-n$만큼 떨어진 "가까운 평면" (near plane)과 $z$좌표가 $-f$ (단, $f > n$)만큼 떨어진 "먼 평면" (far plane)을 정의함
+- 카메라 위치로부터 만들어지는 ==**사각뿔 (pyramid)을 가까운 평면과 먼 평면으로 잘라서 만들어지는 도형을 시야 절두체 (view frustum)**==라고 함
+
+**[투영 변환](https://www.songho.ca/opengl/gl_projectionmatrix.html)**
+$$
+M_{proj} =
+\begin{bmatrix}
+\frac{cot(\frac{fov}{2})}{aspect} & 0 & 0 & 0 \\
+0 & cot(\frac{fov}{2}) & 0 & 0 \\
+0 & 0 & \frac{f + n}{f - n} & \frac{2nf}{f - n} \\
+0 & 0 & -1 & 0
+\end{bmatrix}
+$$
+$$
+{M_{proj}}^\prime =
+\begin{bmatrix}
+\frac{cot(\frac{fov}{2})}{aspect} & 0 & 0 & 0 \\
+0 & cot(\frac{fov}{2}) & 0 & 0 \\
+0 & 0 & -\frac{f + n}{f - n} & -\frac{2nf}{f - n} \\
+0 & 0 & -1 & 0
+\end{bmatrix}
+$$
+- 절두체를 중심이 원점인 $2 \times 2 \times 2$ 크기의 정육면체로 변환 $\rightarrow$ ==**절두체의 모든 물체가 NDC에 속하게 됨**==
+- 투영 변환 행렬의 마지막 행은 $\begin{bmatrix}0 & 0 & -1 & 0\end{bmatrix}$인데, $-1$은 입력 좌표의 $w$ 값을 $-z$로 변환시켜 ==**카메라와 가까운 물체는 크게, 카메라와 먼 물체는 작게 그리도록 함**==
+- 래스터라이저 (rasterizer)는 하드웨어적으로 구현되어 있으며, 클립 공간이 왼손 좌표계 규칙을 따른다고 가정하기 때문에 OpenGL에서는 투영 변환이 끝난 물체들의 $z$축을 반전시켜줘야 함
+
+---
+
+## Rasterizer
+
+**래스터라이저**
+- 래스터라이저는 정점 셰이더의 출력 값인 클립 공간에서의 정점 좌표를 입력받고, 정점을 이어 삼각형들을 만든 다음, 각 삼각형에 속하는 모든 좌표들을 프래그먼트 (fragment)라는 형태로 변환함
+- ==**프래그먼트는 정점을 픽셀 (pixel)로 나타내기 위한 정점 속성 정보를 뜻하며, 정점에 대한 법선과 텍스처 좌표 등의 정보가 포함됨**==
+
+**물체 절단**
+- 래스터라이저는 클립 공간 (절두체) 외부에 있는 물체의 일부 또는 전부를 잘라서, 절두체 외부에 있는 정점을 모두 제거함
+
+**뒷면 제거**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/front_back_face.png)](https://docs.tizen.org/application/native/guides/graphics/assembly/)
+- 뒷면 제거 (back-face culling)는 카메라를 기준으로 물체의 뒷면이 되는 부분을 그리지 않고 제거하여 렌더링 성능을 높이는 것을 뜻함
+- 물체가 카메라를 바라보는 방향 ($\overrightarrow{EYE} - \overrightarrow{AT}$)과 다각형의 법선 벡터의 내적 ($(\overrightarrow{EYE} - \overrightarrow{AT}) \cdot \overrightarrow{n_i}$)이 0보다 작거나, 다각형의 정점 순서가 시계 방향 (clockwise, CW)일 경우 뒷면으로 간주함
+
+**뷰포트**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/viewport.png)](https://docs.tizen.org/application/native/guides/graphics/assembly/)
+- 뷰포트 (viewport)는 게임 창에서 게임 화면이 그려지는 영역을 뜻하며, 창 전체가 아닌 일부일수도 있음
+- 뷰포트에 대한 화면 공간 (screen space, window space)는 왼쪽 좌표계 규칙을 따름
+
+**뷰포트 변환**
+$$
+\begin{bmatrix}
+\frac{w}{2} & 0 & 0 & minX + \frac{w}{2} \\
+0 & \frac{h}{2} & 0 & minY + \frac{w}{2} \\
+0 & 0 & \frac{maxZ - minZ}{2} & \frac{maxZ + minZ}{2} \\
+0 & 0 & -1 & 0
+\end{bmatrix}
+$$
+- NDC에 있는 모든 물체의 정점 좌표를 게임 화면 좌표로 변환
+
+**주사 변환**
+- 주사 변환 (scan conversion)은 삼각형 내부의 연속적인 좌표들을 프래그먼트라는 이산적인 단위로 변환하여, 삼각형이 픽셀로 표현될 수 있도록 함
+
+---
+
+## Image Texturing
+
+**프래그먼트 셰이더**
+- 프래그먼트 셰이더는 래스터라이저의 출력 값인 프래그먼트를 입력으로 받아 프래그먼트의 최종 색상을 결정하며, ==**주로 물체에 텍스처 (texturing)나 조명 효과를 적용 (lighting)하는 단계임**==
+
+**텍스처**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_normalise.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+- 프래그먼트에는 정점에 대한 법선과 텍스처 좌표 등의 정보가 포함되는데, 이 중에서 텍스처 좌표는 텍스처의 어느 부분이 정점에 그려질지를 결정함
+- 텍스처 좌표는 주로 $(s, t)$또는 $(u, v)$와 같은 형태로 표현되며, 텍스처의 해상도와 관계없이 텍스처를 자유롭게 사용하기 위해 $s$와 $t$의 범위를 $[0, 1]$로 일반화 (normalize)시키는 것이 일반적임
+
+**표면 파라미터화**
+- 3차원 모델에 대한 표면 (surface)을 2차원 평면에 펼치고 ==**모델의 각 정점에 텍스처의 좌표를 지정해주는 과정을 표면 파라미터화 (surface parameterization)라고 함**==
+
+**아틀라스**
+- 사람과 같이 복잡한 형태의 모델에 대한 텍스처는 얼굴, 옷, 신발 등의 여러 부분으로 나누어져 있는데, 이것을 패치 (patch)라고 함
+- 패치에 대한 텍스처를 차트 (chart)라고 하며, ==**여러 개의 차트를 하나의 큰 텍스처에 모두 저장해놓은 것을 아틀라스 (atlas)라고 함**==
+
+**텍스처 래핑**
+- 텍스처 래핑 (texture wrapping)은 텍스처를 그릴 때 $s$와 $t$의 범위가 $[0, 1]$ 바깥에 있는 경우 텍스처의 일부 또는 전체를 반복해서 그리는 방법을 뜻함
+
+**텍스처 필터링**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_magnification.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_minification.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+- 이미지 텍스처 (image texture)는 이미지와 마찬가지로 텍셀 (pixel)을 불연속적으로 배열한 것이기 때문에, 텍스처 좌표가 텍셀의 중심이 아닌 곳의 색상은 정의할 수 없음 $\rightarrow$ 텍스처 좌표 주변에 있는 텍셀들을 합쳐 프래그먼트의 색상을 결정해야 함
+- **텍스처의 확대 (magnification):** 화면 공간에 보이는 다각형의 크기가 텍스처 해상도보다 클 경우, 프래그먼트 (픽셀)의 개수가 텍셀의 개수보다 많으므로 이미지 텍스처를 확대해야 함
+- **텍스처의 축소 (magnification):** 화면 공간에 보이는 다각형의 크기가 텍스처 해상도보다 작을 경우, 프래그먼트 (픽셀)의 개수가 텍셀의 개수보다 적으므로 이미지 텍스처를 축소해야 함
+
+**텍스처 확대에 사용되는 필터링 방법**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_nearest.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+- **최근접점 샘플링 (nearest point sampling):** 프래그먼트의 색상을 중심 좌표가 가장 가까운 텍셀의 색상으로 배정
+
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_bilinear.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+- **이중 선형 보간법 (bilinear interpolation):** 프래그먼트 주변에 있는 4개 텍셀에 선형 보간법을 적용
+
+**에일리어싱**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_problem.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+- ==**텍스처를 축소시킬 때는 픽셀의 개수가 텍셀의 개수보다 적은 상황이므로 텍셀의 일부만을 선택해서 픽셀에 배정**==해줘야 하는데, 위 그림과 같은 격자 무늬의 텍스처를 그리고자 할 경우에는 텍셀을 어떻게 선택하든 축소된 텍스처가 제대로 보이지 않는 상황이 발생함 $\rightarrow$ ==**이러한 문제를 에일리어싱 (aliasing)이라고 함**==
+- 에일리어싱 해결을 위한 방법을 안티-에일리어싱 (anti-aliasing, AA)라고 함
+
+**밉맵**
+[![Image from Tizen Docs](https://docs.tizen.org/application/native/guides/graphics/media/texturing_mipmap1.png)](https://docs.tizen.org/application/native/guides/graphics/texturing/)
+- 이미지 텍스처의 원래 해상도가 $2^L \times 2^L$ (예를 들면, $256 \times 256$, $512 \times 512$, $1024 \times 1024$...)일 때 원래 해상도의 텍스처를 레벨 0이라고 하고, 레벨 0 텍스처의 $2 \times 2$개 텍셀을 하나로 합쳐 레벨 0보다 해상도가 2배 낮은 레벨 1 텍스처를 만들고... 이런 식으로 $L + 1$개의 텍스처를 미리 만들어놓은 것을 밉맵 (mipmap)이라고 함
+- 프래그먼트 1개당 $M \times M$개의 텍셀을 차지하는 경우, 레벨 $log_2{M}$의 밉맵 텍스처를 사용
+
+**밉맵 레벨**
+```c
+// For `GL_TEXTURE_MAG_FILTER`, either `GL_NEAREST` or `GL_LINEAR` can be used
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+// `GL_<how to filter each level?>_MIPMAP_<which level to choose?>`
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+```
+- 만약 $log_2 {M}$이 정수가 아니라면 $log_2 M$과 가장 가까운 정수인 $\lfloor{M + 0.5}\rfloor$를 사용 (최근접 레벨)하거나, $\lfloor{M}\rfloor$과 $\lceil{M}\rceil$의 값을 선형 보간해야 함
+- ==**밉맵 레벨 선택 시에 $\lfloor{M}\rfloor$과 $\lceil{M}\rceil$의 값을 선형 보간하고 각 레벨마다 이중 선형 보간법을 적용하는 방법을 삼중 선형 보간법 (trilinear interpolation)이라고 함**==
 
 ---
 
