@@ -84,9 +84,9 @@ static void InitExample(void) {
 
         // 삼각형의 정점 좌표를 NDC 범위 내에 정의한다.
         float vertices[] = {
-            -0.5f, -0.5f, 0.0f,  // #0
-            0.5f,  -0.5f, 0.0f,  // #1
-            0.0f,  0.5f,  0.0f   // #2
+            0.0f, 0.0f, -0.5f, -0.5f, 0.0f,  // #0
+            0.0f, 0.0f, 0.5f,  -0.5f, 0.0f,  // #1
+            0.0f, 0.0f, 0.0f,  0.5f,  0.0f   // #2
         };
 
         // 정점 셰이더가 정점 좌표 배열을 어떻게 읽을지를 지정하기 위해
@@ -130,7 +130,7 @@ static void InitExample(void) {
                 에서 시작하고, 두 번째 좌표는 `vertices + (0 + (1 * stride))`에서 시작)
             */
             glVertexAttribPointer(
-                0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+                0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (2 * sizeof(float)));
 
             // `vao`가 가리키는 속성 정보를 정점 셰이더의 0번 위치에 넘겨준다.
             glEnableVertexAttribArray(0);

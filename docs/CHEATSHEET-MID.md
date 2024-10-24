@@ -669,9 +669,9 @@ $$
 $$
 \begin{bmatrix}
 \frac{w}{2} & 0 & 0 & minX + \frac{w}{2} \\
-0 & \frac{h}{2} & 0 & minY + \frac{w}{2} \\
+0 & \frac{h}{2} & 0 & minY + \frac{h}{2} \\
 0 & 0 & \frac{maxZ - minZ}{2} & \frac{maxZ + minZ}{2} \\
-0 & 0 & -1 & 0
+0 & 0 & 0 & 1
 \end{bmatrix}
 $$
 - NDC에 있는 모든 물체의 정점 좌표를 게임 화면 좌표로 변환
